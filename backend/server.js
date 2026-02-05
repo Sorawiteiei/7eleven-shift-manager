@@ -66,6 +66,23 @@ async function startServer() {
             });
         });
 
+        // Debug & Static Files Check
+        const frontendPath = path.join(__dirname, '../frontend');
+        console.log('📂 Serving frontend from:', frontendPath);
+
+        const indexHtmlPath = path.join(frontendPath, 'index.html');
+        console.log('📄 Looking for index.html at:', indexHtmlPath);
+
+        // Explicit Root Route
+        app.get('/', (req, res) => {
+            res.sendFile(indexHtmlPath, (err) => {
+                if (err) {
+                    console.error('❌ Error serving index.html:', err);
+                    res.status(500).send(`Error loading frontend: ${err.message}. Path: ${indexHtmlPath}`);
+                }
+            });
+        });
+
         // Auth routes
         app.use('/api/auth', authRoutes);
 
