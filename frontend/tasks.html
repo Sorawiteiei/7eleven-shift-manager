@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าที่งาน | 7-Eleven Shift Manager</title>
+
+    <!-- Google Fonts - Prompt (Thai) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tasks.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>7-<span>ELEVEN</span></h1>
+                <p style="font-size: 0.75rem; opacity: 0.7;">Shift Manager</p>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="dashboard.html">
+                            <i class="fas fa-home"></i>
+                            <span>หน้าหลัก</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedule.html">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>ตารางงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="employees.html">
+                            <i class="fas fa-users"></i>
+                            <span>พนักงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tasks.html" class="active">
+                            <i class="fas fa-tasks"></i>
+                            <span>หน้าที่งาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>รายงาน</span>
+                        </a>
+                    </li>
+                    <li id="adminMenu" class="hidden">
+                        <a href="settings.html">
+                            <i class="fas fa-cog"></i>
+                            <span>ตั้งค่า</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Logout -->
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; padding: 0 1rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="page-title">
+                    <h2><i class="fas fa-tasks"></i> หน้าที่งาน</h2>
+                    <p id="currentDate">วันพฤหัสบดีที่ 5 กุมภาพันธ์ 2569</p>
+                </div>
+
+                <div class="user-menu">
+                    <div class="user-info" style="text-align: right;">
+                        <strong id="userName">ผู้ใช้</strong>
+                        <p id="userRole" style="font-size: 0.75rem; color: #6B7280;">บทบาท</p>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <!-- Info Banner -->
+            <section class="info-banner mb-4">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="info-content">
+                    <h4>หน้าที่งาน (Tasks)</h4>
+                    <p>กำหนดหน้าที่งานที่พนักงานต้องทำในแต่ละกะ เช่น เปิดร้าน, เช็คสต๊อก, แคชเชียร์ ฯลฯ</p>
+                </div>
+            </section>
+
+            <!-- Controls -->
+            <section class="controls-section card mb-4">
+                <div class="controls-row">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchTask" placeholder="ค้นหาหน้าที่งาน...">
+                    </div>
+
+                    <div class="filter-group">
+                        <select id="shiftFilter">
+                            <option value="">ทุกกะ</option>
+                            <option value="morning">กะเช้า</option>
+                            <option value="afternoon">กะบ่าย</option>
+                            <option value="night">กะดึก</option>
+                            <option value="all">ทุกกะ (ใช้ได้ทุกกะ)</option>
+                        </select>
+                    </div>
+
+                    <div id="managerActions" class="hidden">
+                        <button class="btn btn-primary" onclick="openAddTaskModal()">
+                            <i class="fas fa-plus"></i> เพิ่มหน้าที่งาน
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Task Categories -->
+            <section class="task-categories mb-4">
+                <div class="category-card morning">
+                    <div class="category-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="category-info">
+                        <h4>กะเช้า</h4>
+                        <p id="morningTaskCount">0 งาน</p>
+                    </div>
+                </div>
+
+                <div class="category-card afternoon">
+                    <div class="category-icon">
+                        <i class="fas fa-cloud-sun"></i>
+                    </div>
+                    <div class="category-info">
+                        <h4>กะบ่าย</h4>
+                        <p id="afternoonTaskCount">0 งาน</p>
+                    </div>
+                </div>
+
+                <div class="category-card night">
+                    <div class="category-icon">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="category-info">
+                        <h4>กะดึก</h4>
+                        <p id="nightTaskCount">0 งาน</p>
+                    </div>
+                </div>
+
+                <div class="category-card all">
+                    <div class="category-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="category-info">
+                        <h4>ทุกกะ</h4>
+                        <p id="allTaskCount">0 งาน</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Task List -->
+            <section class="card">
+                <div class="card-header">
+                    <h3>รายการหน้าที่งาน</h3>
+                    <span id="taskListCount">0 รายการ</span>
+                </div>
+
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="taskModalTitle"><i class="fas fa-plus-circle"></i> เพิ่มหน้าที่งาน</h3>
+                <button class="modal-close" onclick="closeTaskModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+
+                <div class="form-group">
+                    <label for="taskName">ชื่อหน้าที่งาน</label>
+                    <input type="text" id="taskName" placeholder="เช่น เปิดร้าน, เช็คสต๊อก" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDescription">รายละเอียด</label>
+                    <textarea id="taskDescription" rows="3" placeholder="อธิบายรายละเอียดของงาน..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskShift">กะที่ใช้</label>
+                    <select id="taskShift" required>
+                        <option value="all">ทุกกะ</option>
+                        <option value="morning">กะเช้า</option>
+                        <option value="afternoon">กะบ่าย</option>
+                        <option value="night">กะดึก</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskIcon">ไอคอน</label>
+                    <div class="icon-picker" id="iconPicker">
+                        <div class="icon-option selected" data-icon="check">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="icon-option" data-icon="box">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="icon-option" data-icon="broom">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <div class="icon-option" data-icon="cash-register">
+                            <i class="fas fa-cash-register"></i>
+                        </div>
+                        <div class="icon-option" data-icon="coffee">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <div class="icon-option" data-icon="utensils">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="icon-option" data-icon="door-open">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <div class="icon-option" data-icon="door-closed">
+                            <i class="fas fa-door-closed"></i>
+                        </div>
+                        <div class="icon-option" data-icon="clipboard-check">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="icon-option" data-icon="truck">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                    </div>
+                    <input type="hidden" id="taskIcon" value="check">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> บันทึก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/tasks.js"></script>
+</body>
+
+</html>

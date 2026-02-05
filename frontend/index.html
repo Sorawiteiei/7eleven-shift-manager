@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="theme-color" content="#00703C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="7-Eleven Shift">
+
+  <title>เข้าสู่ระบบ | 7-Eleven Shift Manager</title>
+
+  <!-- Google Fonts - Prompt (Thai) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- App Icons -->
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+</head>
+
+<body>
+  <div class="login-container">
+    <!-- Login Card -->
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="login-logo">
+        <h1>7-<span>ELEVEN</span></h1>
+        <p>ระบบจัดการตารางงานพนักงาน</p>
+      </div>
+
+      <!-- Alert Message (Hidden by default) -->
+      <div id="alertMessage" class="alert hidden"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="employeeId">
+            <i class="fas fa-id-card"></i> รหัสพนักงาน
+          </label>
+          <input type="text" id="employeeId" name="employeeId" placeholder="กรอกรหัสพนักงาน" required
+            autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            <i class="fas fa-lock"></i> รหัสผ่าน
+          </label>
+          <input type="password" id="password" name="password" placeholder="กรอกรหัสผ่าน" required
+            autocomplete="current-password">
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe" name="rememberMe">
+            <span>จดจำการเข้าสู่ระบบ</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>เข้าสู่ระบบ</span>
+        </button>
+      </form>
+
+      <!-- Demo Credentials -->
+      <div class="demo-info mt-4">
+        <p style="text-align: center; color: #6B7280; font-size: 0.875rem;">
+          <strong>ทดสอบระบบ:</strong><br>
+          ผู้จัดการ: <code>admin</code> / <code>1234</code><br>
+          พนักงาน: <code>emp001</code> / <code>1234</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+
+  <!-- PWA Service Worker & Install -->
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('ServiceWorker registered:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Show install button after login form
+      const installBtn = document.createElement('button');
+      installBtn.className = 'btn btn-secondary mt-3';
+      installBtn.style.width = '100%';
+      installBtn.innerHTML = '<i class="fas fa-download"></i> ติดตั้งแอป';
+      installBtn.onclick = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('Install prompt outcome:', outcome);
+          deferredPrompt = null;
+          installBtn.remove();
+        }
+      };
+
+      const demoInfo = document.querySelector('.demo-info');
+      if (demoInfo) {
+        demoInfo.parentNode.insertBefore(installBtn, demoInfo);
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      deferredPrompt = null;
+    });
+  </script>
+</body>
+
+</html>

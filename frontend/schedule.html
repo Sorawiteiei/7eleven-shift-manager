@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางงาน | 7-Eleven Shift Manager</title>
+
+    <!-- Google Fonts - Prompt (Thai) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/schedule.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>7-<span>ELEVEN</span></h1>
+                <p style="font-size: 0.75rem; opacity: 0.7;">Shift Manager</p>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="dashboard.html">
+                            <i class="fas fa-home"></i>
+                            <span>หน้าหลัก</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedule.html" class="active">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>ตารางงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="employees.html">
+                            <i class="fas fa-users"></i>
+                            <span>พนักงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tasks.html">
+                            <i class="fas fa-tasks"></i>
+                            <span>หน้าที่งาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>รายงาน</span>
+                        </a>
+                    </li>
+                    <li id="adminMenu" class="hidden">
+                        <a href="settings.html">
+                            <i class="fas fa-cog"></i>
+                            <span>ตั้งค่า</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Logout -->
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; padding: 0 1rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="page-title">
+                    <h2><i class="fas fa-calendar-alt"></i> ตารางงาน</h2>
+                    <p id="currentDate">วันพฤหัสบดีที่ 5 กุมภาพันธ์ 2569</p>
+                </div>
+
+                <div class="user-menu">
+                    <div class="user-info" style="text-align: right;">
+                        <strong id="userName">ผู้ใช้</strong>
+                        <p id="userRole" style="font-size: 0.75rem; color: #6B7280;">บทบาท</p>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <!-- Schedule Controls -->
+            <section class="schedule-controls card mb-4">
+                <div class="controls-row">
+                    <!-- View Mode Tabs -->
+                    <div class="view-tabs">
+                        <button class="view-tab active" data-view="day">
+                            <i class="fas fa-calendar-day"></i> รายวัน
+                        </button>
+                        <button class="view-tab" data-view="week">
+                            <i class="fas fa-calendar-week"></i> รายสัปดาห์
+                        </button>
+                        <button class="view-tab" data-view="month">
+                            <i class="fas fa-calendar"></i> รายเดือน
+                        </button>
+                    </div>
+
+                    <!-- Date Navigation -->
+                    <div class="date-nav">
+                        <button class="btn btn-secondary" id="prevDate">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="current-date-display" id="dateDisplay">5 กุมภาพันธ์ 2569</span>
+                        <button class="btn btn-secondary" id="nextDate">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="btn btn-secondary" id="todayBtn">วันนี้</button>
+                    </div>
+
+                    <!-- Add Shift Button (Manager Only) -->
+                    <div id="managerActions" class="hidden">
+                        <button class="btn btn-primary" onclick="openAddShiftModal()">
+                            <i class="fas fa-plus"></i> เพิ่มกะ
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Day View -->
+            <section class="schedule-view day-view" id="dayView">
+                <!-- Morning Shift -->
+                <div class="shift-card">
+                    <div class="shift-card-header morning">
+                        <div class="shift-info">
+                            <i class="fas fa-sun"></i>
+                            <div>
+                                <h3>กะเช้า</h3>
+                                <span>06:00 - 14:00</span>
+                            </div>
+                        </div>
+                        <span class="employee-count" id="morningCount">0 คน</span>
+                    </div>
+                    <div class="shift-card-body" id="morningShiftContent">
+                        <!-- Employees will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Afternoon Shift -->
+                <div class="shift-card">
+                    <div class="shift-card-header afternoon">
+                        <div class="shift-info">
+                            <i class="fas fa-cloud-sun"></i>
+                            <div>
+                                <h3>กะบ่าย</h3>
+                                <span>14:00 - 22:00</span>
+                            </div>
+                        </div>
+                        <span class="employee-count" id="afternoonCount">0 คน</span>
+                    </div>
+                    <div class="shift-card-body" id="afternoonShiftContent">
+                        <!-- Employees will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Night Shift -->
+                <div class="shift-card">
+                    <div class="shift-card-header night">
+                        <div class="shift-info">
+                            <i class="fas fa-moon"></i>
+                            <div>
+                                <h3>กะดึก</h3>
+                                <span>22:00 - 06:00</span>
+                            </div>
+                        </div>
+                        <span class="employee-count" id="nightCount">0 คน</span>
+                    </div>
+                    <div class="shift-card-body" id="nightShiftContent">
+                        <!-- Employees will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Week View -->
+            <section class="schedule-view week-view hidden" id="weekView">
+                <div class="week-grid">
+                    <div class="week-header">
+                        <div class="time-col">กะ</div>
+                        <div class="day-col">อา.</div>
+                        <div class="day-col">จ.</div>
+                        <div class="day-col">อ.</div>
+                        <div class="day-col">พ.</div>
+                        <div class="day-col">พฤ.</div>
+                        <div class="day-col">ศ.</div>
+                        <div class="day-col">ส.</div>
+                    </div>
+                    <div class="week-body" id="weekBody">
+                        <!-- Week schedule will be loaded here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Month View -->
+            <section class="schedule-view month-view hidden" id="monthView">
+                <div class="month-grid" id="monthGrid">
+                    <!-- Month calendar will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Shift Modal -->
+    <div class="modal-overlay" id="addShiftModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> เพิ่มกะงาน</h3>
+                <button class="modal-close" onclick="closeAddShiftModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addShiftForm">
+                <div class="form-group">
+                    <label for="shiftDate">วันที่</label>
+                    <input type="date" id="shiftDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="shiftType">กะ</label>
+                    <select id="shiftType" required>
+                        <option value="">เลือกกะ</option>
+                        <option value="morning">กะเช้า (06:00 - 14:00)</option>
+                        <option value="afternoon">กะบ่าย (14:00 - 22:00)</option>
+                        <option value="night">กะดึก (22:00 - 06:00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="shiftEmployee">พนักงาน</label>
+                    <select id="shiftEmployee" required>
+                        <option value="">เลือกพนักงาน</option>
+                        <!-- Employees will be loaded here -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>หน้าที่งาน</label>
+                    <div class="task-checkboxes" id="taskCheckboxes">
+                        <!-- Tasks will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddShiftModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> บันทึก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/schedule.js"></script>
+</body>
+
+</html>

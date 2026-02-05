@@ -1,0 +1,26 @@
+{
+    "appId": "com.seveneleven.shiftmanager",
+    "appName": "7-Eleven Shift Manager",
+    "webDir": "frontend",
+    "bundledWebRuntime": false,
+    "server": {
+        "androidScheme": "https"
+    },
+    "plugins": {
+        "SplashScreen": {
+            "launchShowDuration": 2000,
+            "backgroundColor": "#00703C",
+            "showSpinner": true,
+            "spinnerColor": "#F7941D"
+        },
+        "StatusBar": {
+            "style": "light",
+            "backgroundColor": "#00703C"
+        }
+    },
+    "android": {
+        "allowMixedContent": true,
+        "captureInput": true,
+        "webContentsDebuggingEnabled": true
+    }
+}

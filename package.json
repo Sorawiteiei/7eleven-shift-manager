@@ -1,0 +1,70 @@
+{
+  "name": "7eleven-shift-manager",
+  "version": "1.0.0",
+  "description": "7-Eleven Shift Management System - ระบบจัดการตารางงานพนักงาน",
+  "main": "electron.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "setup": "node backend/database/setup.js",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:build": "npx cap sync && npx cap copy",
+    "android": "npm run cap:sync && npm run cap:open:android"
+  },
+  "keywords": [
+    "7-eleven",
+    "shift-management",
+    "employee-scheduling",
+    "thai"
+  ],
+  "author": "7-Eleven Thailand",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.18.0",
+    "sql.js": "^1.10.2"
+  },
+  "devDependencies": {
+    "electron": "^40.1.0",
+    "electron-builder": "^26.7.0",
+    "electron-packager": "^17.1.2",
+    "nodemon": "^3.0.3"
+  },
+  "build": {
+    "appId": "com.seveneleven.shiftmanager",
+    "productName": "7-Eleven Shift Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron.js",
+      "backend/**/*",
+      "frontend/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "dir"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | 7-Eleven Shift Manager</title>
+
+    <!-- Google Fonts - Prompt (Thai) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>7-<span>ELEVEN</span></h1>
+                <p style="font-size: 0.75rem; opacity: 0.7;">Shift Manager</p>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="dashboard.html" class="active">
+                            <i class="fas fa-home"></i>
+                            <span>หน้าหลัก</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedule.html">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>ตารางงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="employees.html">
+                            <i class="fas fa-users"></i>
+                            <span>พนักงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tasks.html">
+                            <i class="fas fa-tasks"></i>
+                            <span>หน้าที่งาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>รายงาน</span>
+                        </a>
+                    </li>
+                    <li id="adminMenu" class="hidden">
+                        <a href="settings.html">
+                            <i class="fas fa-cog"></i>
+                            <span>ตั้งค่า</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Logout -->
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; padding: 0 1rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="page-title">
+                    <h2>หน้าหลัก</h2>
+                    <p id="currentDate">วันพฤหัสบดีที่ 5 กุมภาพันธ์ 2569</p>
+                </div>
+
+                <div class="user-menu">
+                    <div class="user-info" style="text-align: right;">
+                        <strong id="userName">ผู้ใช้</strong>
+                        <p id="userRole" style="font-size: 0.75rem; color: #6B7280;">บทบาท</p>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalEmployees">0</h3>
+                        <p>พนักงานทั้งหมด</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="todayShifts">0</h3>
+                        <p>กะวันนี้</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="weeklyShifts">0</h3>
+                        <p>กะสัปดาห์นี้</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pendingTasks">0</h3>
+                        <p>งานค้าง</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Today's Schedule -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-clock"></i> ตารางงานวันนี้</h3>
+                    <a href="schedule.html" class="btn btn-secondary">ดูทั้งหมด</a>
+                </div>
+
+                <div class="schedule-today" id="todaySchedule">
+                    <!-- Morning Shift -->
+                    <div class="shift-section">
+                        <div class="shift-header morning">
+                            <i class="fas fa-sun"></i>
+                            <span>กะเช้า (06:00 - 14:00)</span>
+                        </div>
+                        <div class="shift-employees" id="morningEmployees">
+                            <p class="text-center" style="color: #9CA3AF; padding: 1rem;">กำลังโหลด...</p>
+                        </div>
+                    </div>
+
+                    <!-- Afternoon Shift -->
+                    <div class="shift-section">
+                        <div class="shift-header afternoon">
+                            <i class="fas fa-cloud-sun"></i>
+                            <span>กะบ่าย (14:00 - 22:00)</span>
+                        </div>
+                        <div class="shift-employees" id="afternoonEmployees">
+                            <p class="text-center" style="color: #9CA3AF; padding: 1rem;">กำลังโหลด...</p>
+                        </div>
+                    </div>
+
+                    <!-- Night Shift -->
+                    <div class="shift-section">
+                        <div class="shift-header night">
+                            <i class="fas fa-moon"></i>
+                            <span>กะดึก (22:00 - 06:00)</span>
+                        </div>
+                        <div class="shift-employees" id="nightEmployees">
+                            <p class="text-center" style="color: #9CA3AF; padding: 1rem;">กำลังโหลด...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My Tasks (for employees) -->
+            <section class="card" id="myTasksSection">
+                <div class="card-header">
+                    <h3><i class="fas fa-clipboard-list"></i> งานของฉันวันนี้</h3>
+                </div>
+
+                <div id="myTasks">
+                    <p class="text-center" style="color: #9CA3AF; padding: 2rem;">ไม่มีงานที่ได้รับมอบหมาย</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Additional Styles for Dashboard -->
+    <style>
+        .shift-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .shift-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .shift-header.morning {
+            background: linear-gradient(135deg, var(--seven-green), var(--seven-green-light));
+        }
+
+        .shift-header.afternoon {
+            background: linear-gradient(135deg, var(--seven-orange), #FFB347);
+        }
+
+        .shift-header.night {
+            background: linear-gradient(135deg, #1E3A5F, #2D5A87);
+        }
+
+        .shift-employees {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0.5rem;
+        }
+
+        .employee-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gray-100);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            transition: var(--transition-fast);
+        }
+
+        .employee-chip:hover {
+            background: var(--gray-200);
+            transform: translateY(-2px);
+        }
+
+        .employee-chip .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--seven-green), var(--seven-orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            transition: var(--transition-fast);
+        }
+
+        .task-item:hover {
+            background: var(--gray-50);
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .task-checkbox.completed {
+            background: var(--seven-green);
+            border-color: var(--seven-green);
+            color: white;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-info h4 {
+            font-weight: 500;
+            color: var(--gray-800);
+        }
+
+        .task-info p {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .task-time {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+    </style>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

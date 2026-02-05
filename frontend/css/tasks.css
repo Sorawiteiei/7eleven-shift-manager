@@ -1,0 +1,311 @@
+/* ===========================================
+   7-Eleven Shift Manager - Tasks Styles
+   =========================================== */
+
+/* ---------- Info Banner ---------- */
+.info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(0, 112, 60, 0.1), rgba(247, 148, 29, 0.1));
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(0, 112, 60, 0.2);
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--seven-green);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.info-content h4 {
+    color: var(--seven-green);
+    margin-bottom: 0.25rem;
+}
+
+.info-content p {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+/* ---------- Task Categories ---------- */
+.task-categories {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.category-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.category-card.morning:hover {
+    border-color: var(--seven-green);
+}
+
+.category-card.afternoon:hover {
+    border-color: var(--seven-orange);
+}
+
+.category-card.night:hover {
+    border-color: #1E3A5F;
+}
+
+.category-card.all:hover {
+    border-color: var(--gray-400);
+}
+
+.category-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.category-card.morning .category-icon {
+    background: rgba(0, 112, 60, 0.1);
+    color: var(--seven-green);
+}
+
+.category-card.afternoon .category-icon {
+    background: rgba(247, 148, 29, 0.1);
+    color: var(--seven-orange);
+}
+
+.category-card.night .category-icon {
+    background: rgba(30, 58, 95, 0.1);
+    color: #1E3A5F;
+}
+
+.category-card.all .category-icon {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.category-info h4 {
+    font-size: 0.9375rem;
+    color: var(--gray-800);
+    margin-bottom: 0.125rem;
+}
+
+.category-info p {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+}
+
+/* ---------- Task List ---------- */
+.task-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--gray-100);
+    transition: var(--transition-fast);
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item:hover {
+    background: var(--gray-50);
+}
+
+.task-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.task-icon.morning {
+    background: rgba(0, 112, 60, 0.1);
+    color: var(--seven-green);
+}
+
+.task-icon.afternoon {
+    background: rgba(247, 148, 29, 0.1);
+    color: var(--seven-orange);
+}
+
+.task-icon.night {
+    background: rgba(30, 58, 95, 0.1);
+    color: #1E3A5F;
+}
+
+.task-icon.all {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.task-info {
+    flex: 1;
+}
+
+.task-info h4 {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.25rem;
+}
+
+.task-info p {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+}
+
+.task-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.task-badge.morning {
+    background: rgba(0, 112, 60, 0.1);
+    color: var(--seven-green);
+}
+
+.task-badge.afternoon {
+    background: rgba(247, 148, 29, 0.1);
+    color: var(--seven-orange);
+}
+
+.task-badge.night {
+    background: rgba(30, 58, 95, 0.1);
+    color: #1E3A5F;
+}
+
+.task-badge.all {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.task-actions button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------- Icon Picker ---------- */
+.icon-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+}
+
+.icon-option {
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: 1.125rem;
+    color: var(--gray-500);
+}
+
+.icon-option:hover {
+    border-color: var(--seven-green);
+    color: var(--seven-green);
+}
+
+.icon-option.selected {
+    background: var(--seven-green);
+    border-color: var(--seven-green);
+    color: var(--white);
+}
+
+/* ---------- Textarea ---------- */
+textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: var(--transition-fast);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--seven-green);
+    box-shadow: 0 0 0 3px rgba(0, 112, 60, 0.1);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .task-categories {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .task-item {
+        flex-wrap: wrap;
+    }
+
+    .task-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .task-categories {
+        grid-template-columns: 1fr;
+    }
+}

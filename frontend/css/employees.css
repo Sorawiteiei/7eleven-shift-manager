@@ -1,0 +1,360 @@
+/* ===========================================
+   7-Eleven Shift Manager - Employees Styles
+   =========================================== */
+
+/* ---------- Controls Section ---------- */
+.controls-section {
+    padding: 1rem 1.5rem;
+}
+
+.controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    font-size: 0.9375rem;
+    transition: var(--transition-fast);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--seven-green);
+    box-shadow: 0 0 0 3px rgba(0, 112, 60, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-group select {
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    cursor: pointer;
+    min-width: 150px;
+}
+
+/* ---------- Employee Grid ---------- */
+.employee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.employee-card-container {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    transition: var(--transition-fast);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.employee-card-container:hover {
+    background: var(--white);
+    border-color: var(--seven-green);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.employee-card-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.employee-avatar-large {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--seven-green), var(--seven-orange));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.employee-avatar-large.manager {
+    background: linear-gradient(135deg, var(--seven-orange), var(--seven-red));
+}
+
+.employee-main-info {
+    flex: 1;
+}
+
+.employee-main-info h4 {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.25rem;
+}
+
+.employee-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.employee-role-badge.manager {
+    background: rgba(247, 148, 29, 0.15);
+    color: var(--seven-orange);
+}
+
+.employee-role-badge.employee {
+    background: rgba(0, 112, 60, 0.15);
+    color: var(--seven-green);
+}
+
+.employee-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.employee-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+.employee-info-item i {
+    width: 16px;
+    color: var(--gray-400);
+}
+
+.employee-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.employee-card-actions button {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.btn-view {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.btn-view:hover {
+    background: var(--seven-green);
+    color: var(--white);
+}
+
+.btn-edit-emp {
+    background: rgba(247, 148, 29, 0.1);
+    color: var(--seven-orange);
+}
+
+.btn-edit-emp:hover {
+    background: var(--seven-orange);
+    color: var(--white);
+}
+
+.btn-delete-emp {
+    background: rgba(237, 28, 36, 0.1);
+    color: var(--seven-red);
+}
+
+.btn-delete-emp:hover {
+    background: var(--seven-red);
+    color: var(--white);
+}
+
+/* ---------- Form Row ---------- */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+/* ---------- Employee Detail View ---------- */
+.employee-detail {
+    text-align: center;
+}
+
+.detail-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--seven-green), var(--seven-orange));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-weight: 600;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+}
+
+.detail-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.detail-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: rgba(0, 112, 60, 0.1);
+    color: var(--seven-green);
+    margin-bottom: 1.5rem;
+}
+
+.detail-info-grid {
+    display: grid;
+    gap: 0.75rem;
+    text-align: left;
+    background: var(--gray-50);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+}
+
+.detail-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.detail-info-row:last-child {
+    border-bottom: none;
+}
+
+.detail-info-row .label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+.detail-info-row .value {
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+.detail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.detail-stat {
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.detail-stat h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--seven-green);
+}
+
+.detail-stat p {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+/* ---------- Empty State ---------- */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gray-400);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        max-width: none;
+    }
+
+    .filter-group {
+        flex-direction: column;
+    }
+
+    .employee-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-stats {
+        grid-template-columns: 1fr;
+    }
+}

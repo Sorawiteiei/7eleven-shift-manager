@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงาน | 7-Eleven Shift Manager</title>
+
+    <!-- Google Fonts - Prompt (Thai) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/reports.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>7-<span>ELEVEN</span></h1>
+                <p style="font-size: 0.75rem; opacity: 0.7;">Shift Manager</p>
+            </div>
+
+            <nav>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="dashboard.html">
+                            <i class="fas fa-home"></i>
+                            <span>หน้าหลัก</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedule.html">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>ตารางงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="employees.html">
+                            <i class="fas fa-users"></i>
+                            <span>พนักงาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tasks.html">
+                            <i class="fas fa-tasks"></i>
+                            <span>หน้าที่งาน</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html" class="active">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>รายงาน</span>
+                        </a>
+                    </li>
+                    <li id="adminMenu" class="hidden">
+                        <a href="settings.html">
+                            <i class="fas fa-cog"></i>
+                            <span>ตั้งค่า</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Logout -->
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; padding: 0 1rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="page-title">
+                    <h2><i class="fas fa-chart-bar"></i> รายงาน</h2>
+                    <p id="currentDate">วันพฤหัสบดีที่ 5 กุมภาพันธ์ 2569</p>
+                </div>
+
+                <div class="user-menu">
+                    <div class="user-info" style="text-align: right;">
+                        <strong id="userName">ผู้ใช้</strong>
+                        <p id="userRole" style="font-size: 0.75rem; color: #6B7280;">บทบาท</p>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <!-- Period Selection -->
+            <section class="period-selection card mb-4">
+                <div class="period-row">
+                    <div class="period-tabs">
+                        <button class="period-tab active" data-period="week">สัปดาห์นี้</button>
+                        <button class="period-tab" data-period="month">เดือนนี้</button>
+                        <button class="period-tab" data-period="custom">กำหนดเอง</button>
+                    </div>
+
+                    <div class="custom-date-range hidden" id="customDateRange">
+                        <input type="date" id="startDate">
+                        <span>ถึง</span>
+                        <input type="date" id="endDate">
+                        <button class="btn btn-primary" onclick="applyDateRange()">
+                            <i class="fas fa-search"></i> ค้นหา
+                        </button>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="exportReport()">
+                        <i class="fas fa-download"></i> ส่งออก Excel
+                    </button>
+                </div>
+            </section>
+
+            <!-- Summary Stats -->
+            <section class="report-stats mb-4">
+                <div class="report-stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>กะทั้งหมด</span>
+                    </div>
+                    <h3 id="totalShifts">42</h3>
+                    <p class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +5% จากสัปดาห์ก่อน
+                    </p>
+                </div>
+
+                <div class="report-stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-clock"></i>
+                        <span>ชั่วโมงทำงาน</span>
+                    </div>
+                    <h3 id="totalHours">336</h3>
+                    <p class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +2% จากสัปดาห์ก่อน
+                    </p>
+                </div>
+
+                <div class="report-stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-user-clock"></i>
+                        <span>เฉลี่ย/คน</span>
+                    </div>
+                    <h3 id="avgHours">48</h3>
+                    <p class="stat-change neutral">
+                        <i class="fas fa-minus"></i> เท่าเดิม
+                    </p>
+                </div>
+
+                <div class="report-stat-card">
+                    <div class="stat-header">
+                        <i class="fas fa-check-circle"></i>
+                        <span>งานที่เสร็จ</span>
+                    </div>
+                    <h3 id="completedTasks">95%</h3>
+                    <p class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +3% จากสัปดาห์ก่อน
+                    </p>
+                </div>
+            </section>
+
+            <!-- Charts Row -->
+            <section class="charts-row mb-4">
+                <!-- Shift Distribution -->
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-pie-chart"></i> กะงานตามประเภท</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="pie-chart" id="shiftPieChart">
+                            <div class="pie-segment morning" style="--percentage: 35; --offset: 0;">
+                                <span class="pie-label">กะเช้า 35%</span>
+                            </div>
+                            <div class="pie-segment afternoon" style="--percentage: 40; --offset: 35;">
+                                <span class="pie-label">กะบ่าย 40%</span>
+                            </div>
+                            <div class="pie-segment night" style="--percentage: 25; --offset: 75;">
+                                <span class="pie-label">กะดึก 25%</span>
+                            </div>
+                        </div>
+                        <div class="pie-legend">
+                            <div class="legend-item">
+                                <span class="legend-color morning"></span>
+                                <span>กะเช้า (35%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color afternoon"></span>
+                                <span>กะบ่าย (40%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color night"></span>
+                                <span>กะดึก (25%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Trend -->
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-line"></i> แนวโน้มรายสัปดาห์</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="bar-chart" id="weeklyBarChart">
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 60%;">
+                                    <span class="bar-value">6</span>
+                                </div>
+                                <span class="bar-label">อา.</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 80%;">
+                                    <span class="bar-value">8</span>
+                                </div>
+                                <span class="bar-label">จ.</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 70%;">
+                                    <span class="bar-value">7</span>
+                                </div>
+                                <span class="bar-label">อ.</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 50%;">
+                                    <span class="bar-value">5</span>
+                                </div>
+                                <span class="bar-label">พ.</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 90%;">
+                                    <span class="bar-value">9</span>
+                                </div>
+                                <span class="bar-label">พฤ.</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 40%;">
+                                    <span class="bar-value">4</span>
+                                </div>
+                                <span class="bar-label">ศ.</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="--height: 30%;">
+                                    <span class="bar-value">3</span>
+                                </div>
+                                <span class="bar-label">ส.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Employee Performance -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-trophy"></i> ผลงานพนักงาน</h3>
+                </div>
+
+                <div class="performance-table">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>พนักงาน</th>
+                                <th>กะทำงาน</th>
+                                <th>ชั่วโมง</th>
+                                <th>งานที่เสร็จ</th>
+                                <th>คะแนน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performanceTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> กิจกรรมล่าสุด</h3>
+                </div>
+
+                <div class="activity-list" id="activityList">
+                    <!-- Activities will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/reports.js"></script>
+</body>
+
+</html>
