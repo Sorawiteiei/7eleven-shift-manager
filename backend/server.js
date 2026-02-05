@@ -73,14 +73,66 @@ async function startServer() {
         const indexHtmlPath = path.join(frontendPath, 'index.html');
         console.log('📄 Looking for index.html at:', indexHtmlPath);
 
-        // Explicit Root Route
+        // Explicit Root Route (In-Memory HTML Fallback)
         app.get('/', (req, res) => {
-            res.sendFile(indexHtmlPath, (err) => {
-                if (err) {
-                    console.error('❌ Error serving index.html:', err);
-                    res.status(500).send(`Error loading frontend: ${err.message}. Path: ${indexHtmlPath}`);
-                }
-            });
+            // Check if file exists first
+            if (require('fs').existsSync(indexHtmlPath)) {
+                res.sendFile(indexHtmlPath);
+            } else {
+                console.error('❌ index.html not found on disk, serving backup HTML');
+                // Backup HTML if file not found (Emergency Mode)
+                res.send(`
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ (Recovery Mode)</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #00703C; color: white; margin: 0; }
+    .card { background: white; color: #333; padding: 2rem; border-radius: 1rem; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+    button { background: #F7941D; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    h1 { color: #00703C; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>7-ELEVEN</h1>
+    <p>System Recovery Mode</p>
+    <form id="loginForm">
+      <input type="text" id="employeeId" placeholder="รหัสพนักงาน (admin)" required>
+      <input type="password" id="password" placeholder="รหัสผ่าน (1234)" required>
+      <button type="submit">ข้าสู่ระบบ</button>
+    </form>
+    <script>
+      document.getElementById('loginForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const empId = document.getElementById('employeeId').value;
+        const pass = document.getElementById('password').value;
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ employeeId: empId, password: pass })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            alert('Login Success! Redirecting...');
+            window.location.href = '/dashboard.html';
+          } else {
+            alert('Login Failed: ' + data.error);
+          }
+        } catch (err) { alert('Error: ' + err.message); }
+      };
+    </script>
+  </div>
+</body>
+</html>
+                `);
+            }
         });
 
         // Auth routes
