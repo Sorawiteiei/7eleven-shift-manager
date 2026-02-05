@@ -4,6 +4,8 @@
     "webDir": "frontend",
     "bundledWebRuntime": false,
     "server": {
+        "url": "https://seven-eleven-app.onrender.com",
+        "cleartext": true,
         "androidScheme": "https"
     },
     "plugins": {
