@@ -12,7 +12,7 @@ const db = require('../database/db');
 router.get('/', async (req, res) => {
     try {
         const employees = await db.prepare(`
-      SELECT id, employee_id, name, role, phone, email, avatar, start_date, is_active, created_at
+      SELECT id, employee_id, name, role, employment_type, phone, email, avatar, start_date, is_active, created_at
       FROM users
       WHERE is_active = 1
       ORDER BY name
@@ -24,6 +24,7 @@ router.get('/', async (req, res) => {
             employeeId: emp.employee_id,
             name: emp.name,
             role: emp.role,
+            employmentType: emp.employment_type || 'fulltime', // Default to fulltime
             phone: emp.phone,
             email: emp.email,
             avatar: emp.avatar,
@@ -41,16 +42,12 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const employee = await db.prepare(`
-      SELECT id, employee_id, name, role, phone, email, avatar, start_date, created_at
+      SELECT id, employee_id, name, role, employment_type, phone, email, avatar, start_date, created_at
       FROM users
       WHERE id = ? AND is_active = 1
     `).get(req.params.id);
 
         if (!employee) return res.status(404).json({ error: 'ไม่พบพนักงาน' });
-
-        // Stats query needs to be compatible with both DBs
-        // SQLite: date('now', '-30 days')
-        // Postgres: NOW() - INTERVAL '30 days'
 
         // Simplification: Let's fetch shifts and count in JS for cross-db compatibility comfort
         const shifts = await db.prepare(`
@@ -71,6 +68,7 @@ router.get('/:id', async (req, res) => {
             employeeId: employee.employee_id,
             name: employee.name,
             role: employee.role,
+            employmentType: employee.employment_type || 'fulltime',
             phone: employee.phone,
             email: employee.email,
             avatar: employee.avatar,
@@ -88,7 +86,7 @@ router.get('/:id', async (req, res) => {
 // Create Employee
 router.post('/', async (req, res) => {
     try {
-        const { employeeId, password, name, role, phone, email, startDate } = req.body;
+        const { employeeId, password, name, role, employmentType, phone, email, startDate } = req.body;
 
         if (!employeeId || !password || !name) {
             return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
@@ -101,9 +99,9 @@ router.post('/', async (req, res) => {
         const avatar = name.charAt(0);
 
         const result = await db.prepare(`
-      INSERT INTO users (employee_id, password_hash, name, role, phone, email, avatar, start_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(employeeId, passwordHash, name, role || 'employee', phone, email, avatar, startDate);
+      INSERT INTO users (employee_id, password_hash, name, role, employment_type, phone, email, avatar, start_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(employeeId, passwordHash, name, role || 'employee', employmentType || 'fulltime', phone, email, avatar, startDate);
 
         res.status(201).json({
             success: true,
@@ -120,7 +118,7 @@ router.post('/', async (req, res) => {
 // Update Employee
 router.put('/:id', async (req, res) => {
     try {
-        const { employeeId, name, role, phone, email, startDate, password } = req.body;
+        const { employeeId, name, role, employmentType, phone, email, startDate, password } = req.body;
         const id = req.params.id;
 
         const existing = await db.prepare('SELECT id FROM users WHERE id = ?').get(id);
@@ -136,13 +134,14 @@ router.put('/:id', async (req, res) => {
         employee_id = COALESCE(?, employee_id),
         name = COALESCE(?, name),
         role = COALESCE(?, role),
+        employment_type = COALESCE(?, employment_type),
         phone = ?,
         email = ?,
         start_date = ?,
         avatar = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(employeeId, name, role, phone, email, startDate, name ? name.charAt(0) : null, id);
+    `).run(employeeId, name, role, employmentType, phone, email, startDate, name ? name.charAt(0) : null, id);
 
         if (password) {
             const passwordHash = bcrypt.hashSync(password, 10);

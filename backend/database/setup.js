@@ -28,6 +28,7 @@ async function setupDatabase() {
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL,
       role TEXT CHECK(role IN ('manager', 'employee')) DEFAULT 'employee',
+      employment_type TEXT CHECK(employment_type IN ('fulltime', 'parttime')) DEFAULT 'fulltime',
       phone TEXT,
       email TEXT,
       avatar TEXT,
@@ -37,6 +38,15 @@ async function setupDatabase() {
       updated_at TIMESTAMP DEFAULT ${timestampDefault}
     )
   `);
+
+  // Migration: Add employment_type if not exists
+  try {
+    // Try adding the column (will fail if exists, which is fine)
+    await db.exec(`ALTER TABLE users ADD COLUMN employment_type TEXT DEFAULT 'fulltime'`);
+    console.log('  - Added column: employment_type');
+  } catch (e) {
+    // Column likely exists
+  }
 
   // Tasks table
   await db.exec(`
