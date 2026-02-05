@@ -389,6 +389,7 @@ h3 {
     margin-bottom: 2rem;
 }
 
+/* Stats Cards - Default (White) */
 .stat-card {
     background: var(--white);
     border-radius: var(--radius-lg);
@@ -397,12 +398,60 @@ h3 {
     display: flex;
     align-items: center;
     gap: 1rem;
+    position: relative;
+    overflow: hidden;
     transition: var(--transition-fast);
+}
+
+/* Premium Gradient Cards (New) */
+.stat-card:has(.stat-icon.green) {
+    background: linear-gradient(135deg, #4ADE80 0%, #22C55E 100%);
+}
+
+.stat-card:has(.stat-icon.orange) {
+    background: linear-gradient(135deg, #FDBA74 0%, #FB923C 100%);
+}
+
+.stat-card:has(.stat-icon.red) {
+    background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+}
+
+.stat-card:has(.stat-icon.blue) {
+    background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+}
+
+/* Make text white on gradient cards */
+.stat-card:has(.stat-icon) .stat-info h3,
+.stat-card:has(.stat-icon) .stat-info p {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust icon style for gradient cards */
+.stat-card:has(.stat-icon) .stat-icon {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    backdrop-filter: blur(5px);
 }
 
 .stat-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+}
+
+/* Fallback for older browsers (White style) */
+@supports not selector(:has(*)) {
+    .stat-card {
+        background: var(--white);
+    }
+
+    .stat-info h3 {
+        color: var(--gray-900);
+    }
+
+    .stat-info p {
+        color: var(--gray-500);
+    }
 }
 
 .stat-icon {
@@ -413,37 +462,6 @@ h3 {
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-}
-
-.stat-icon.green {
-    background: rgba(0, 112, 60, 0.1);
-    color: var(--seven-green);
-}
-
-.stat-icon.orange {
-    background: rgba(247, 148, 29, 0.1);
-    color: var(--seven-orange);
-}
-
-.stat-icon.red {
-    background: rgba(237, 28, 36, 0.1);
-    color: var(--seven-red);
-}
-
-.stat-icon.blue {
-    background: rgba(30, 58, 95, 0.1);
-    color: var(--shift-night);
-}
-
-.stat-info h3 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--gray-900);
-}
-
-.stat-info p {
-    color: var(--gray-500);
-    font-size: 0.875rem;
 }
 
 /* ---------- Shift Schedule ---------- */
