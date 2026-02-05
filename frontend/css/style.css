@@ -403,35 +403,34 @@ h3 {
     transition: var(--transition-fast);
 }
 
-/* Premium Gradient Cards (New) */
-.stat-card:has(.stat-icon.green) {
+/* Premium Gradient Cards (Explicit Classes) */
+.stat-card.card-green {
     background: linear-gradient(135deg, #4ADE80 0%, #22C55E 100%);
 }
 
-.stat-card:has(.stat-icon.orange) {
+.stat-card.card-orange {
     background: linear-gradient(135deg, #FDBA74 0%, #FB923C 100%);
 }
 
-.stat-card:has(.stat-icon.red) {
+.stat-card.card-red {
     background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
 }
 
-.stat-card:has(.stat-icon.blue) {
+.stat-card.card-blue {
     background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
 }
 
-/* Make text white on gradient cards */
-.stat-card:has(.stat-icon) .stat-info h3,
-.stat-card:has(.stat-icon) .stat-info p {
+/* Text & Icon Colors on Gradient Cards */
+.stat-card[class*="card-"] .stat-info h3,
+.stat-card[class*="card-"] .stat-info p {
     color: white;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Adjust icon style for gradient cards */
-.stat-card:has(.stat-icon) .stat-icon {
-    background: rgba(255, 255, 255, 0.2) !important;
+.stat-card[class*="card-"] .stat-icon {
+    background: rgba(255, 255, 255, 0.25) !important;
     color: white !important;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(4px);
 }
 
 .stat-card:hover {
@@ -878,4 +877,125 @@ h3 {
 
 .gap-3 {
     gap: 1rem;
+}
+
+/* ==========================================================================
+   FORCE UPDATE STYLES (Modern Design Fix)
+   ========================================================================== */
+
+/* 1. Mobile Bottom Navigation Bar (Fixed & Clean White) */
+.mobile-bottom-nav {
+    display: none;
+    /* Hidden on desktop */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none !important;
+    }
+
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        min-height: 70px;
+        background: #FFFFFF;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
+        /* Soft shadow */
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        z-index: 9999;
+        justify-content: space-around;
+        align-items: center;
+        padding: 5px 15px;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        /* Safe Area */
+    }
+
+    .nav-item {
+        color: #9CA3AF;
+        /* Gray text */
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        background: transparent;
+        border: none;
+        padding: 8px;
+    }
+
+    .nav-item i {
+        font-size: 1.5rem;
+        margin-bottom: 2px;
+    }
+
+    .nav-item.active {
+        color: #00703C;
+        /* 7-Eleven Green */
+        transform: translateY(-2px);
+    }
+
+    .main-content {
+        padding-bottom: 100px !important;
+        /* Space for bottom nav */
+    }
+}
+
+/* 2. Premium Gradient Stat Cards (Explicit via Classes) */
+.stat-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    /* IMPORTANT */
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+    margin-bottom: 1rem;
+}
+
+/* Specific Colors using Classes */
+.stat-card.card-green {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+}
+
+.stat-card.card-orange {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+}
+
+.stat-card.card-red {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+}
+
+.stat-card.card-blue {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+}
+
+/* Text & Icons on Colored Cards (Force White) */
+.stat-card[class*="card-"] .stat-info h3,
+.stat-card[class*="card-"] .stat-info p {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card[class*="card-"] .stat-icon {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    backdrop-filter: blur(4px);
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
 }
