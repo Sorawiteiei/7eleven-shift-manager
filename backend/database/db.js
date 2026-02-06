@@ -19,29 +19,36 @@ if (IS_PRODUCTION) {
     // ==========================================
     const { Pool } = require('pg');
 
-    // Use connection string from environment variable
-    const connectionString = process.env.DATABASE_URL;
+    // Hardcoded fallback for emergency/deployment issues
+    const FALLBACK_DB = 'postgresql://neondb_owner:npg_xUGo1MbQ6HnI@ep-curly-voice-a1999abb-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 
-    if (!connectionString) {
-        console.error('❌ DATABASE_URL is missing for production environment');
-        // Fallback to localhost if no env provided, likely to fail on Render but safe locally
-        console.log('🔄 Falling back to SQLite for development...');
-        // Force SQLite mode
-        process.env.NODE_ENV = 'development';
-        process.env.DATABASE_URL = null;
+    // Use connection string from environment variable or fallback
+    let connectionString = process.env.DATABASE_URL;
+
+    // Validate connection string
+    let isValidUrl = false;
+    try {
+        if (connectionString) {
+            new URL(connectionString);
+            isValidUrl = true;
+        }
+    } catch (e) {
+        console.error('❌ Invalid DATABASE_URL format provided in environment');
+    }
+
+    if (!isValidUrl) {
+        console.warn('⚠️  Falling back to hardcoded NeonDB connection string');
+        connectionString = FALLBACK_DB;
     } else {
-        // Safe logging to debug connection issues without exposing password
+        // Safe logging
         try {
             const url = new URL(connectionString);
-            console.log(`🔌 Attempting to connect to Postgres host: ${url.hostname}`);
-            console.log(`🔌 Database: ${url.pathname.substring(1)}`);
-        } catch (e) {
-            console.error('❌ Invalid connection string format provided');
-        }
+            console.log(`🔌 Connecting to host: ${url.hostname}`);
+        } catch (e) { }
     }
 
     const pool = new Pool({
-        connectionString: connectionString || 'postgresql://localhost:5432/neondb',
+        connectionString,
         ssl: {
             rejectUnauthorized: false
         }
