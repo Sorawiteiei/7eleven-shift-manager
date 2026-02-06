@@ -24,10 +24,20 @@ if (IS_PRODUCTION) {
 
     if (!connectionString) {
         console.error('❌ DATABASE_URL is missing for production environment');
+        // Fallback to localhost if no env provided, likely to fail on Render but safe locally
         console.log('🔄 Falling back to SQLite for development...');
         // Force SQLite mode
         process.env.NODE_ENV = 'development';
         process.env.DATABASE_URL = null;
+    } else {
+        // Safe logging to debug connection issues without exposing password
+        try {
+            const url = new URL(connectionString);
+            console.log(`🔌 Attempting to connect to Postgres host: ${url.hostname}`);
+            console.log(`🔌 Database: ${url.pathname.substring(1)}`);
+        } catch (e) {
+            console.error('❌ Invalid connection string format provided');
+        }
     }
 
     const pool = new Pool({
