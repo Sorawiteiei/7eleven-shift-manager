@@ -12,13 +12,15 @@ router.get('/date/:date', async (req, res) => {
     try {
         const { date } = req.params;
 
-        // Manual helper for sorting to be DB agnostic
         const shifts = await db.prepare(`
       SELECT 
         s.id,
         s.user_id,
         s.shift_date,
         s.shift_type,
+        s.custom_name,
+        s.start_time,
+        s.end_time,
         s.status,
         s.notes,
         u.name as employee_name,
@@ -29,8 +31,8 @@ router.get('/date/:date', async (req, res) => {
     `).all(date);
 
         // Sort manually
-        const shiftOrder = { morning: 1, afternoon: 2, night: 3 };
-        shifts.sort((a, b) => shiftOrder[a.shift_type] - shiftOrder[b.shift_type]);
+        const shiftOrder = { morning: 1, afternoon: 2, night: 3, custom: 4 };
+        shifts.sort((a, b) => (shiftOrder[a.shift_type] || 4) - (shiftOrder[b.shift_type] || 4));
 
         // Get tasks for each shift
         const shiftsWithTasks = await Promise.all(shifts.map(async (shift) => {
@@ -47,7 +49,8 @@ router.get('/date/:date', async (req, res) => {
         const grouped = {
             morning: shiftsWithTasks.filter(s => s.shift_type === 'morning'),
             afternoon: shiftsWithTasks.filter(s => s.shift_type === 'afternoon'),
-            night: shiftsWithTasks.filter(s => s.shift_type === 'night')
+            night: shiftsWithTasks.filter(s => s.shift_type === 'night'),
+            custom: shiftsWithTasks.filter(s => !['morning', 'afternoon', 'night'].includes(s.shift_type))
         };
 
         res.json(grouped);
@@ -62,19 +65,19 @@ router.get('/date/:date', async (req, res) => {
 router.get('/week/:startDate', async (req, res) => {
     try {
         const { startDate } = req.params;
-
-        // Calculate end date for query (start + 7 days)
         const end = new Date(startDate);
         end.setDate(end.getDate() + 7);
         const endDate = end.toISOString().split('T')[0];
 
-        // Using string comparison for dates works in both SQLite and Postgres usually
         const shifts = await db.prepare(`
       SELECT 
         s.id,
         s.user_id,
         s.shift_date,
         s.shift_type,
+        s.custom_name,
+        s.start_time,
+        s.end_time,
         s.status,
         u.name as employee_name,
         u.avatar as employee_avatar
@@ -96,14 +99,16 @@ router.get('/week/:startDate', async (req, res) => {
 router.get('/employee/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const { month } = req.query; // YYYY-MM
+        const { month } = req.query;
 
-        // Base query
         let query = `
       SELECT 
         s.id,
         s.shift_date,
         s.shift_type,
+        s.custom_name,
+        s.start_time,
+        s.end_time,
         s.status,
         s.notes
       FROM shifts s
@@ -112,15 +117,11 @@ router.get('/employee/:userId', async (req, res) => {
 
         const params = [userId];
 
-        // Filter by month (doing it in JS for max compatibility is safest without ORM)
-        // But let's try a LIKE query which works for string dates
         if (month) {
-            // Create a start and end date for the month
             const startOfMonth = `${month}-01`;
             const endDate = new Date(month);
             endDate.setMonth(endDate.getMonth() + 1);
             const endOfMonth = endDate.toISOString().split('T')[0];
-
             query += ` AND s.shift_date >= ? AND s.shift_date < ?`;
             params.push(startOfMonth, endOfMonth);
         }
@@ -151,23 +152,27 @@ router.get('/employee/:userId', async (req, res) => {
 // Create Shift
 router.post('/', async (req, res) => {
     try {
-        const { userId, shiftDate, shiftType, tasks, notes } = req.body;
+        const { userId, shiftDate, shiftType, tasks, notes, customName, startTime, endTime } = req.body;
 
         if (!userId || !shiftDate || !shiftType) {
             return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
         }
 
-        const existing = await db.prepare(`
-      SELECT id FROM shifts 
-      WHERE user_id = ? AND shift_date = ? AND shift_type = ?
-    `).get(userId, shiftDate, shiftType);
-
-        if (existing) return res.status(400).json({ error: 'พนักงานมีกะนี้แล้วในวันที่เลือก' });
+        // Allow duplicates if it's a custom shift? Or still one per type?
+        // Let's stick to unique check but relax it for custom? Or just check if exactly same overlap.
+        // For simplicity, check if same type exists.
+        if (shiftType !== 'custom') {
+            const existing = await db.prepare(`
+                SELECT id FROM shifts 
+                WHERE user_id = ? AND shift_date = ? AND shift_type = ?
+            `).get(userId, shiftDate, shiftType);
+            if (existing) return res.status(400).json({ error: 'พนักงานมีกะนี้แล้วในวันที่เลือก' });
+        }
 
         const result = await db.prepare(`
-      INSERT INTO shifts (user_id, shift_date, shift_type, notes)
-      VALUES (?, ?, ?, ?)
-    `).run(userId, shiftDate, shiftType, notes);
+      INSERT INTO shifts (user_id, shift_date, shift_type, custom_name, start_time, end_time, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(userId, shiftDate, shiftType, customName, startTime, endTime, notes);
 
         const shiftId = result.lastInsertRowid;
 
@@ -181,10 +186,12 @@ router.post('/', async (req, res) => {
         }
 
         const employee = await db.prepare('SELECT name FROM users WHERE id = ?').get(userId);
+        const shiftLabel = shiftType === 'custom' ? `กะพิเศษ (${customName})` : shiftType;
+
         await db.prepare(`
       INSERT INTO activity_log (user_id, action_type, description)
       VALUES (?, 'shift_created', ?)
-    `).run(userId, `เพิ่มกะ ${shiftType} ให้ ${employee.name} วันที่ ${shiftDate}`);
+    `).run(userId, `เพิ่มกะ ${shiftLabel} ให้ ${employee.name} วันที่ ${shiftDate}`);
 
         res.status(201).json({
             success: true,

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>การลาและการหยุดงาน | 7-Eleven Shift Manager</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .leave-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .leave-list {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .leave-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s;
+        }
+
+        .leave-item:last-child {
+            border-bottom: none;
+        }
+
+        .leave-item:hover {
+            background: #f9fafb;
+        }
+
+        .leave-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .leave-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: grid;
+            place-items: center;
+            font-weight: bold;
+            color: #4b5563;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-approved {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-rejected {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .btn-approve {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn-reject {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Types */
+        .type-sick {
+            color: #EF4444;
+        }
+
+        .type-vacation {
+            color: #3B82F6;
+        }
+
+        .type-business {
+            color: #8B5CF6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>7-<span>ELEVEN</span></h1>
+                <p style="font-size: 0.75rem; opacity: 0.7;">Shift Manager</p>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li><a href="dashboard.html"><i class="fas fa-home"></i> <span>หน้าหลัก</span></a></li>
+                    <li><a href="schedule.html"><i class="fas fa-calendar-alt"></i> <span>ตารางงาน</span></a></li>
+                    <li><a href="employees.html"><i class="fas fa-users"></i> <span>พนักงาน</span></a></li>
+                    <li><a href="leaves.html" class="active"><i class="fas fa-user-clock"></i>
+                            <span>การลา/หยุด</span></a></li>
+                    <li><a href="tasks.html"><i class="fas fa-tasks"></i> <span>หน้าที่งาน</span></a></li>
+                    <li><a href="reports.html"><i class="fas fa-chart-bar"></i> <span>รายงาน</span></a></li>
+                    <li id="adminMenu" class="hidden"><a href="settings.html"><i class="fas fa-cog"></i>
+                            <span>ตั้งค่า</span></a></li>
+                </ul>
+            </nav>
+            <div style="position: absolute; bottom: 1rem; left: 0; right: 0; padding: 0 1rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="page-title">
+                    <h2><i class="fas fa-user-clock"></i> ระบบการลา</h2>
+                    <p>จัดการการลาป่วย ลากิจ และพักร้อน</p>
+                </div>
+                <div class="user-menu">
+                    <div class="user-info" style="text-align: right;">
+                        <strong id="userName">ผู้ใช้</strong>
+                        <p id="userRole" style="font-size: 0.75rem; color: #6B7280;">บทบาท</p>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                </div>
+            </header>
+
+            <div class="header-actions" style="display: flex; justify-content: flex-end; margin-bottom: 2rem;">
+                <button class="btn btn-primary" onclick="openLeaveModal()">
+                    <i class="fas fa-plus"></i> ขอลาหยุด
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="leave-stats hidden" id="managerStats">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #fbbf24;"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <h3>รออนุมัติ</h3>
+                        <p class="text-2xl font-bold" id="pendingCount">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #34d399;"><i class="fas fa-check"></i></div>
+                    <div>
+                        <h3>อนุมัติเดือนนี้</h3>
+                        <p class="text-2xl font-bold" id="approvedCount">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manager Section: Pending Approvals -->
+            <section id="pendingSection" style="margin-bottom: 2rem; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3><i class="fas fa-bell" style="color: #F59E0B;"></i> รายการรออนุมัติ (Manager)</h3>
+                </div>
+                <div class="leave-list" id="pendingList">
+                    <!-- Loaded via JS -->
+                    <div style="padding: 2rem; text-align: center; color: #9ca3af;">ไม่มีรายการรออนุมัติ</div>
+                </div>
+            </section>
+
+            <!-- Previous Leaves / My Leaves -->
+            <section>
+                <h3 id="historyTitle" style="margin-bottom: 1rem;">ประวัติการลา</h3>
+                <div class="leave-list" id="leavesHistory">
+                    <!-- Loaded via JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Request Leave Modal -->
+    <div class="modal-overlay" id="leaveModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-signature"></i> แบบฟอร์มขอลาหยุด</h3>
+                <button class="modal-close" onclick="closeLeaveModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="leaveForm">
+                <div class="form-group">
+                    <label>ประเภทการลา</label>
+                    <select id="leaveType" required>
+                        <option value="sick">🤒 ลาป่วย</option>
+                        <option value="business">💼 ลากิจ</option>
+                        <option value="vacation">🏖️ ลาพักร้อน</option>
+                        <option value="other">📝 อื่นๆ</option>
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>ตั้งแต่วันที่</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ถึงวันที่</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>เหตุผล</label>
+                    <textarea id="reason" rows="3" required placeholder="ระบุเหตุผลการลา..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeLeaveModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">ส่งใบลา</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        const API_LEAVES = 'http://localhost:3000/api/leaves';
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = getCurrentUser();
+            if (!currentUser) return;
+
+            // Setup UI based on role
+            if (isManager()) {
+                document.getElementById('managerStats').classList.remove('hidden');
+                document.getElementById('pendingSection').style.display = 'block';
+                document.getElementById('historyTitle').textContent = 'ประวัติการลาทั้งหมด';
+                loadPendingLeaves();
+                loadAllHistory();
+            } else {
+                loadMyHistory();
+            }
+
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
+        });
+
+        function openLeaveModal() {
+            document.getElementById('leaveModal').classList.add('active');
+        }
+
+        function closeLeaveModal() {
+            document.getElementById('leaveModal').classList.remove('active');
+            document.getElementById('leaveForm').reset();
+        }
+
+        // Submit Leave
+        document.getElementById('leaveForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const type = document.getElementById('leaveType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reason = document.getElementById('reason').value;
+
+            try {
+                const res = await fetch(API_LEAVES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        type, startDate, endDate, reason
+                    })
+                });
+
+                if (res.ok) {
+                    alert('ส่งใบลาเรียบร้อยแล้ว รอหัวหน้าพิจารณา');
+                    closeLeaveModal();
+                    if (isManager()) { loadAllHistory(); loadPendingLeaves(); }
+                    else { loadMyHistory(); }
+                } else {
+                    alert('เกิดข้อผิดพลาด');
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        async function loadPendingLeaves() {
+            const res = await fetch(`${API_LEAVES}?status=pending`);
+            const leaves = await res.json();
+            const container = document.getElementById('pendingList');
+            document.getElementById('pendingCount').textContent = leaves.length;
+
+            if (leaves.length === 0) {
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #9ca3af;">ไม่มีรายการรออนุมัติ</div>';
+                return;
+            }
+
+            container.innerHTML = leaves.map(l => createLeaveItem(l, true)).join('');
+        }
+
+        async function loadAllHistory() {
+            const res = await fetch(`${API_LEAVES}`); // No status filter = all
+            const leaves = await res.json();
+            const approved = leaves.filter(l => l.status === 'approved' && new Date(l.start_date).getMonth() === new Date().getMonth()).length;
+            document.getElementById('approvedCount').textContent = approved;
+
+            // Only show processed ones in history for manager to avoid dupe with pending list
+            const history = leaves.filter(l => l.status !== 'pending');
+            document.getElementById('leavesHistory').innerHTML = history.length ? history.map(l => createLeaveItem(l, false)).join('') : '<p class="text-center p-4">ไม่มีประวัติ</p>';
+        }
+
+        async function loadMyHistory() {
+            const res = await fetch(`${API_LEAVES}?userId=${currentUser.id}`);
+            const leaves = await res.json();
+            document.getElementById('leavesHistory').innerHTML = leaves.map(l => createLeaveItem(l, false)).join('');
+        }
+
+        function createLeaveItem(leave, isManagerAction) {
+            const typeMap = { sick: 'ลาป่วย', vacation: 'พักร้อน', business: 'ลากิจ', other: 'อื่นๆ' };
+            const typeClass = `type-${leave.leave_type}`;
+            const statusClass = `status-${leave.status}`;
+            const statusText = { pending: 'รออนุมัติ', approved: 'อนุมัติแล้ว', rejected: 'ถูกปฏิเสธ' };
+
+            // Date format
+            const d1 = new Date(leave.start_date).toLocaleDateString('th-TH');
+            const d2 = new Date(leave.end_date).toLocaleDateString('th-TH');
+            const dateStr = d1 === d2 ? d1 : `${d1} - ${d2}`;
+
+            let actions = '';
+            if (isManagerAction && leave.status === 'pending') {
+                actions = `
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-approve" onclick="updateStatus(${leave.id}, 'approved')" title="อนุมัติ"><i class="fas fa-check"></i></button>
+                        <button class="btn-reject" onclick="updateStatus(${leave.id}, 'rejected')" title="ไม่อนุมัติ"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+            } else {
+                actions = `<span class="status-badge ${statusClass}">${statusText[leave.status]}</span>`;
+            }
+
+            return `
+                <div class="leave-item">
+                    <div class="leave-info">
+                        <div class="leave-user-avatar">${leave.employee_avatar || leave.employee_name.charAt(0)}</div>
+                        <div>
+                            <div style="font-weight: 600;">${leave.employee_name} <span class="${typeClass}" style="font-size: 0.9em;">(${typeMap[leave.leave_type]})</span></div>
+                            <div style="font-size: 0.85rem; color: #6b7280;">
+                                <i class="far fa-calendar"></i> ${dateStr} 
+                                <span style="margin-left: 0.5rem;">เหตุผล: ${leave.reason}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ${actions}
+                </div>
+            `;
+        }
+
+        async function updateStatus(id, status) {
+            if (!confirm(`ยืนยันการ${status === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}?`)) return;
+
+            try {
+                const res = await fetch(`${API_LEAVES}/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        status,
+                        approverId: currentUser.id,
+                        comment: ''
+                    })
+                });
+
+                if (res.ok) {
+                    loadPendingLeaves();
+                    loadAllHistory();
+                }
+            } catch (e) { console.error(e); }
+        }
+    </script>
+</body>
+
+</html>

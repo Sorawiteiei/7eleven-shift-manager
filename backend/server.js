@@ -56,6 +56,7 @@ async function startServer() {
     const employeesRoutes = require('./routes/employees');
     const shiftsRoutes = require('./routes/shifts');
     const tasksRoutes = require('./routes/tasks');
+    const leavesRoutes = require('./routes/leaves');
 
     // ============================================
     // API Routes
@@ -151,6 +152,9 @@ async function startServer() {
 
     // Task routes
     app.use('/api/tasks', tasksRoutes);
+
+    // Leave routes
+    app.use('/api/leaves', leavesRoutes);
 
     // ============================================
     // Error Handling

@@ -49,6 +49,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="leaves.html">
+                            <i class="fas fa-user-clock"></i>
+                            <span>การลา/หยุด</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="tasks.html">
                             <i class="fas fa-tasks"></i>
                             <span>หน้าที่งาน</span>
@@ -187,6 +193,24 @@
                 </div>
             </section>
 
+            <!-- Special Shifts -->
+            <div class="shift-card" id="specialShiftCard" style="display: none;">
+                <div class="shift-card-header special" style="background: linear-gradient(135deg, #8B5CF6, #EC4899);">
+                    <div class="shift-info">
+                        <i class="fas fa-star"></i>
+                        <div>
+                            <h3>กะพิเศษ</h3>
+                            <span>Custom Shifts</span>
+                        </div>
+                    </div>
+                    <span class="employee-count" id="specialCount">0 คน</span>
+                </div>
+                <div class="shift-card-body" id="specialShiftContent">
+                    <!-- Employees will be loaded here -->
+                </div>
+            </div>
+            </section>
+
             <!-- Week View -->
             <section class="schedule-view week-view hidden" id="weekView">
                 <div class="week-grid">
@@ -257,12 +281,31 @@
 
                 <div class="form-group">
                     <label for="shiftType">กะ</label>
-                    <select id="shiftType" required>
+                    <select id="shiftType" required onchange="toggleCustomShiftFields()">
                         <option value="">เลือกกะ</option>
                         <option value="morning">กะเช้า (06:00 - 14:00)</option>
                         <option value="afternoon">กะบ่าย (14:00 - 22:00)</option>
                         <option value="night">กะดึก (22:00 - 06:00)</option>
+                        <option value="custom">✨ กะพิเศษ (Custom)</option>
                     </select>
+                </div>
+
+                <div id="customShiftFields"
+                    style="display: none; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label for="customName">ชื่อกะพิเศษ</label>
+                        <input type="text" id="customName" placeholder="เช่น กะเสริม, กะ Event">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="startTime">เวลาเริ่ม</label>
+                            <input type="time" id="startTime">
+                        </div>
+                        <div class="form-group">
+                            <label for="endTime">เลิกงาน</label>
+                            <input type="time" id="endTime">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">

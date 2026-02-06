@@ -45,9 +45,86 @@ function switchView(view) {
 /**
  * โหลดข้อมูลตามมุมมองที่เลือก
  */
-function loadScheduleView() {
+/**
+ * โหลดข้อมูลตามมุมมองที่เลือก (Async)
+ */
+async function loadScheduleView() {
     updateDateDisplay();
 
+    // Fetch master data first if not loaded
+    if (!window.employeesMap) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/employees`);
+            const emps = await res.json();
+            window.employeesMap = {};
+            emps.forEach(e => window.employeesMap[e.id] = e);
+        } catch (e) { console.error('Load employees failed', e); }
+    }
+
+    if (!window.tasksMap) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/tasks`);
+            const tasks = await res.json();
+            window.tasksMap = {};
+            tasks.forEach(t => window.tasksMap[t.id] = t);
+        } catch (e) { console.error('Load tasks failed', e); }
+    }
+
+    // Determine date range to fetch
+    let start, end;
+    if (currentView === 'day') {
+        const d = formatDateKey(currentDate);
+        start = d; end = d;
+    } else if (currentView === 'week') {
+        const s = getWeekStart(currentDate);
+        start = formatDateKey(s);
+        const e = new Date(s); e.setDate(e.getDate() + 6);
+        end = formatDateKey(e);
+    } else {
+        const y = currentDate.getFullYear();
+        const m = currentDate.getMonth();
+        start = formatDateKey(new Date(y, m, 1));
+        end = formatDateKey(new Date(y, m + 1, 0));
+    }
+
+    // Fetch shifts
+    try {
+        const res = await fetch(`${API_BASE_URL}/shifts?start=${start}&end=${end}`);
+        const shifts = await res.json();
+
+        // Organize shifts by date -> type
+        window.scheduleData = {};
+
+        // Ensure the current view date exists at least as empty
+        // logic to populate window.scheduleData
+        // API returns array of shifts, we must group them
+        shifts.forEach(s => {
+            const date = s.shift_date.split('T')[0];
+            if (!window.scheduleData[date]) {
+                window.scheduleData[date] = { morning: [], afternoon: [], night: [], custom: [] };
+            }
+
+            // Add to list if valid type (custom included)
+            if (window.scheduleData[date][s.shift_type]) {
+                // Formatting for frontend usage
+                window.scheduleData[date][s.shift_type].push({
+                    id: s.id,
+                    employeeId: s.user_id,
+                    tasks: s.tasks ? s.tasks.map(t => t.id) : [],
+                    // Custom fields
+                    customName: s.custom_name,
+                    startTime: s.start_time,
+                    endTime: s.end_time
+                });
+            }
+        });
+
+    } catch (e) {
+        console.error('Fetch shifts failed', e);
+        window.scheduleData = {};
+    }
+
+    // Render logic
     switch (currentView) {
         case 'day':
             loadDayView();
@@ -159,6 +236,20 @@ function loadDayView() {
     const nightCount = document.getElementById('nightCount');
     renderShiftContent(nightContent, schedule.night, 'night');
     nightCount.textContent = `${schedule.night.length} คน`;
+
+    // Special / Custom
+    const specialContent = document.getElementById('specialShiftContent');
+    const specialCount = document.getElementById('specialCount');
+    const specialCard = document.getElementById('specialShiftCard');
+
+    if (schedule.custom && schedule.custom.length > 0) {
+        specialCard.style.display = 'block';
+        renderShiftContent(specialContent, schedule.custom, 'custom');
+        specialCount.textContent = `${schedule.custom.length} คน`;
+    } else {
+        specialCard.style.display = 'none';
+        specialContent.innerHTML = '';
+    }
 }
 
 /**
@@ -178,26 +269,38 @@ function renderShiftContent(container, shiftData, shiftType) {
     let html = '';
 
     shiftData.forEach(item => {
-        const employee = EMPLOYEES.find(e => e.id === item.employeeId);
+        // Use loaded map
+        const employee = window.employeesMap ? window.employeesMap[item.employeeId] : null;
         if (!employee) return;
 
         const taskTags = item.tasks.map(taskId => {
-            const task = TASK_TYPES.find(t => t.id === taskId);
+            const task = window.tasksMap ? window.tasksMap[taskId] : null;
             if (!task) return '';
             return `<span class="task-tag"><i class="fas fa-check"></i> ${task.name}</span>`;
         }).join('');
 
+        // Custom shift display info
+        let subTitle = '';
+        if (shiftType === 'custom') {
+            subTitle = `<div style="font-size: 0.8em; color: #7c3aed; margin-top: 2px;">
+                <strong>${item.customName || 'กะพิเศษ'}</strong> 
+                (${item.startTime} - ${item.endTime})
+            </div>`;
+        }
+
         html += `
-      <div class="shift-employee">
-        <div class="avatar">${employee.avatar}</div>
+       <div class="shift-employee">
+        <div class="avatar">${employee.avatar || employee.name.charAt(0)}</div>
         <div class="shift-employee-info">
           <h4>${employee.name}</h4>
+          ${subTitle}
           <div class="shift-employee-tasks">
             ${taskTags || '<span class="text-muted">ไม่มีงานที่ได้รับมอบหมาย</span>'}
           </div>
         </div>
         ${isManager() ? `
           <div class="shift-employee-actions">
+            <!-- Pass ID instead of object -->
             <button class="btn-edit" onclick="editShift(${employee.id}, '${shiftType}')" title="แก้ไข">
               <i class="fas fa-edit"></i>
             </button>
@@ -255,12 +358,13 @@ function loadWeekView() {
             html += `<div class="week-cell ${isToday ? 'today' : ''}">`;
 
             shiftData.forEach(item => {
-                const employee = EMPLOYEES.find(e => e.id === item.employeeId);
+                // Use loaded map
+                const employee = window.employeesMap ? window.employeesMap[item.employeeId] : null;
                 if (!employee) return;
 
                 html += `
           <div class="week-employee ${shift.type}" onclick="showEmployeeDetail(${employee.id}, '${dateStr}', '${shift.type}')">
-            <div class="mini-avatar">${employee.avatar}</div>
+            <div class="mini-avatar">${employee.avatar || employee.name.charAt(0)}</div>
             <span>${employee.name.split(' ')[0]}</span>
           </div>
         `;
@@ -375,23 +479,15 @@ function isSameDay(date1, date2) {
 /**
  * Get schedule for a specific date
  */
+/**
+ * Get schedule for a specific date
+ */
 function getScheduleForDate(dateStr) {
-    // For demo, return TODAY_SCHEDULE for any date
-    // In production, this would fetch from API
-    const today = formatDateKey(new Date());
-    if (dateStr === today) {
-        return TODAY_SCHEDULE;
+    // Return data from global state if available, otherwise empty
+    if (window.scheduleData && window.scheduleData[dateStr]) {
+        return window.scheduleData[dateStr];
     }
-
-    // Generate random schedule for other dates
-    const seed = dateStr.split('-').reduce((a, b) => a + parseInt(b), 0);
-    const random = (n) => ((seed * 9301 + 49297) % 233280) / 233280 * n;
-
-    return {
-        morning: random(100) > 50 ? [{ employeeId: 2, tasks: [1, 3, 7] }] : [],
-        afternoon: random(100) > 40 ? [{ employeeId: 4, tasks: [7, 8] }] : [],
-        night: random(100) > 60 ? [{ employeeId: 6, tasks: [5, 6] }] : []
-    };
+    return { morning: [], afternoon: [], night: [] };
 }
 
 // ============================================
@@ -401,31 +497,52 @@ function getScheduleForDate(dateStr) {
 /**
  * เปิด Modal เพิ่มกะ
  */
-function openAddShiftModal() {
+/**
+ * เปิด Modal เพิ่มกะ
+ */
+async function openAddShiftModal() {
     const modal = document.getElementById('addShiftModal');
     modal.classList.add('active');
 
     // Set default date
     document.getElementById('shiftDate').value = formatDateKey(currentDate);
 
-    // Load employees
-    const empSelect = document.getElementById('shiftEmployee');
-    empSelect.innerHTML = '<option value="">เลือกพนักงาน</option>';
-    EMPLOYEES.filter(e => e.role === 'employee').forEach(emp => {
-        empSelect.innerHTML += `<option value="${emp.id}">${emp.name}</option>`;
-    });
+    // Load employees and tasks from API
+    try {
+        const [empRes, taskRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/employees`),
+            fetch(`${API_BASE_URL}/tasks`)
+        ]);
 
-    // Load tasks
-    const taskContainer = document.getElementById('taskCheckboxes');
-    taskContainer.innerHTML = '';
-    TASK_TYPES.forEach(task => {
-        taskContainer.innerHTML += `
-      <div class="task-checkbox-item">
-        <input type="checkbox" id="task_${task.id}" name="tasks" value="${task.id}">
-        <label for="task_${task.id}">${task.name}</label>
-      </div>
-    `;
-    });
+        const employees = await empRes.json();
+        const tasks = await taskRes.json();
+
+        // Load employees
+        const empSelect = document.getElementById('shiftEmployee');
+        empSelect.innerHTML = '<option value="">เลือกพนักงาน</option>';
+
+        employees.forEach(emp => {
+            // Show all users, or filter if needed. The backend usually returns active users.
+            empSelect.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.employee_id})</option>`;
+        });
+
+        // Load tasks
+        const taskContainer = document.getElementById('taskCheckboxes');
+        taskContainer.innerHTML = '';
+
+        tasks.forEach(task => {
+            taskContainer.innerHTML += `
+            <div class="task-checkbox-item">
+                <input type="checkbox" id="task_${task.id}" name="tasks" value="${task.id}">
+                <label for="task_${task.id}">${task.name}</label>
+            </div>
+            `;
+        });
+
+    } catch (error) {
+        console.error('Error loading modal data:', error);
+        alert('ไม่สามารถโหลดข้อมูลพนักงานหรือหน้าที่งานได้');
+    }
 }
 
 /**
@@ -440,12 +557,51 @@ function closeAddShiftModal() {
 /**
  * บันทึกกะใหม่
  */
+/**
+ * Toggle Custom Shift Fields
+ */
+function toggleCustomShiftFields() {
+    const type = document.getElementById('shiftType').value;
+    const customFields = document.getElementById('customShiftFields');
+    const requiredInputs = customFields.querySelectorAll('input');
+
+    if (type === 'custom') {
+        customFields.style.display = 'block';
+        requiredInputs.forEach(input => input.required = true);
+    } else {
+        customFields.style.display = 'none';
+        requiredInputs.forEach(input => input.required = false);
+    }
+}
+
+/**
+ * บันทึกกะใหม่
+ */
 async function saveShift(e) {
     e.preventDefault();
 
-    const date = document.getElementById('shiftDate').value;
+    const date = document.getElementById('shiftDate').value; // note: backend expects shiftDate (camelCase) in body? Check route. Route: `const { userId, shiftDate, ... } = req.body;`
+    // Front end sends: `body: JSON.stringify({ date, shiftType, employeeId, tasks })`. 
+    // Wait, backend expects `shiftDate`.
+    // Existing code sent `date`. Let's verify if existing backend code handles `date` or `shiftDate`.
+    // Checking previous backend file view: `const { userId, shiftDate, shiftType... } = req.body`.
+    // But frontend sends `date`. Mismatch? 
+    // Ah, likely I missed something or it was working because I didn't verify backend fully?
+    // Let's send `shiftDate: date`.
+
     const shiftType = document.getElementById('shiftType').value;
     const employeeId = parseInt(document.getElementById('shiftEmployee').value);
+
+    let customName, startTime, endTime;
+    if (shiftType === 'custom') {
+        customName = document.getElementById('customName').value;
+        startTime = document.getElementById('startTime').value;
+        endTime = document.getElementById('endTime').value;
+
+        if (!processTime(startTime) || !processTime(endTime)) {
+            // validate?
+        }
+    }
 
     // Validate
     if (!employeeId) {
@@ -459,10 +615,20 @@ async function saveShift(e) {
     });
 
     try {
+        const payload = {
+            userId: employeeId,
+            shiftDate: date,
+            shiftType,
+            tasks,
+            customName,
+            startTime,
+            endTime
+        };
+
         const response = await fetch(`${API_BASE_URL}/shifts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date, shiftType, employeeId, tasks })
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
@@ -479,6 +645,8 @@ async function saveShift(e) {
         alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
     }
 }
+
+function processTime(t) { return t; } // Dummy helper if needed
 
 /**
  * แก้ไขกะ
@@ -513,7 +681,7 @@ function viewDayDetail(year, month, day) {
  * แสดงรายละเอียดพนักงาน (จาก Week View)
  */
 function showEmployeeDetail(employeeId, dateStr, shiftType) {
-    const employee = EMPLOYEES.find(e => e.id === employeeId);
+    const employee = window.employeesMap ? window.employeesMap[employeeId] : null;
     if (employee) {
         alert(`${employee.name}\nกะ: ${shiftType}\nวันที่: ${dateStr}`);
     }

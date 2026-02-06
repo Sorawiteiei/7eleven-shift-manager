@@ -179,6 +179,21 @@ function openAddEmployeeModal() {
   document.getElementById('employeeModal').classList.add('active');
 }
 
+/**
+ * ปิด Modal เพิ่มพนักงาน
+ */
+function closeEmployeeModal() {
+  document.getElementById('employeeModal').classList.remove('active');
+  document.getElementById('employeeForm').reset();
+}
+
+/**
+ * ปิด Modal ดูพนักงาน
+ */
+function closeViewEmployeeModal() {
+  document.getElementById('viewEmployeeModal').classList.remove('active');
+}
+
 // ... viewEmployee remains same but can be enhanced to show stats from API ...
 // Defining viewEmployee as it was implicitly referenced but not shown in replacement chunk?
 // I should provide the function definition to maintain validity
