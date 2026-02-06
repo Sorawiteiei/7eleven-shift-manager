@@ -267,5 +267,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Set active navigation
         setActiveNav();
+
+        // redirect to settings when clicking user profile
+        const userMenu = document.querySelector('.user-menu');
+        if (userMenu) {
+            userMenu.style.cursor = 'pointer';
+            userMenu.onclick = () => window.location.href = 'settings.html';
+        }
     }
 });

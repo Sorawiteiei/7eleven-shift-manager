@@ -39,10 +39,12 @@
     "sql.js": "^1.10.2"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "electron": "^40.1.0",
     "electron-builder": "^26.7.0",
     "electron-packager": "^17.1.2",
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "wait-on": "^9.0.3"
   },
   "build": {
     "appId": "com.seveneleven.shiftmanager",

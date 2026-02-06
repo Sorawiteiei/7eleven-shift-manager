@@ -440,24 +440,44 @@ function closeAddShiftModal() {
 /**
  * บันทึกกะใหม่
  */
-function saveShift(e) {
+async function saveShift(e) {
     e.preventDefault();
 
     const date = document.getElementById('shiftDate').value;
     const shiftType = document.getElementById('shiftType').value;
     const employeeId = parseInt(document.getElementById('shiftEmployee').value);
 
+    // Validate
+    if (!employeeId) {
+        alert('กรุณาเลือกพนักงาน');
+        return;
+    }
+
     const tasks = [];
     document.querySelectorAll('input[name="tasks"]:checked').forEach(cb => {
         tasks.push(parseInt(cb.value));
     });
 
-    console.log('Saving shift:', { date, shiftType, employeeId, tasks });
+    try {
+        const response = await fetch(`${API_BASE_URL}/shifts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date, shiftType, employeeId, tasks })
+        });
 
-    // In production, this would save to API
-    alert('บันทึกกะงานเรียบร้อย! (Demo Mode)');
-    closeAddShiftModal();
-    loadScheduleView();
+        const result = await response.json();
+
+        if (response.ok) {
+            alert('บันทึกกะงานเรียบร้อย!');
+            closeAddShiftModal();
+            loadScheduleView();
+        } else {
+            alert('เกิดข้อผิดพลาด: ' + (result.error || result.message));
+        }
+    } catch (error) {
+        console.error('Save shift error:', error);
+        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    }
 }
 
 /**

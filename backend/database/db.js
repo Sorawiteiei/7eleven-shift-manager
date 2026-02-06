@@ -16,10 +16,22 @@ if (IS_PRODUCTION) {
     // ==========================================
     // PostgreSQL Connection (Production)
     // ==========================================
+    // ==========================================
     const { Pool } = require('pg');
+
+    // Use connection string from environment variable
+    const connectionString = process.env.DATABASE_URL;
+
+    if (!connectionString) {
+        console.error('❌ DATABASE_URL is missing for production environment');
+        console.log('🔄 Falling back to SQLite for development...');
+        // Force SQLite mode
+        process.env.NODE_ENV = 'development';
+        process.env.DATABASE_URL = null;
+    }
+
     const pool = new Pool({
-        // Hardcoded for immediate fix
-        connectionString: 'postgresql://neondb_owner:npg_xUGo1MbQ6HnI@ep-curly-voice-a1999abb-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+        connectionString: connectionString || 'postgresql://localhost:5432/neondb',
         ssl: {
             rejectUnauthorized: false
         }
@@ -163,8 +175,13 @@ if (IS_PRODUCTION) {
         },
         exec: (sql) => {
             if (!sqliteDb) throw new Error('DB not initialized');
-            sqliteDb.run(sql);
-            db.saveDatabase();
+            try {
+                sqliteDb.run(sql);
+                db.saveDatabase();
+            } catch (error) {
+                console.error('SQLite exec error:', error);
+                throw error;
+            }
         }
     };
 }

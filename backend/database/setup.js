@@ -9,7 +9,12 @@ const bcrypt = require('bcryptjs');
 async function setupDatabase() {
   console.log('🗄️  Initializing database schema...');
 
-  await db.initDatabase();
+  try {
+    await db.initDatabase();
+  } catch (error) {
+    console.error('❌ Failed to initialize database:', error.message);
+    throw error;
+  }
 
   // ============================================
   // Create Tables
@@ -157,4 +162,8 @@ async function setupDatabase() {
   console.log('🎉 Database setup complete!');
 }
 
-setupDatabase().catch(console.error);
+if (require.main === module) {
+  setupDatabase().catch(console.error);
+}
+
+module.exports = { setupDatabase };

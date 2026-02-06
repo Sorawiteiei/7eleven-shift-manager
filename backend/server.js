@@ -29,9 +29,9 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Logging middleware
 app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.url}`);
-    next();
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.url}`);
+  next();
 });
 
 // ============================================
@@ -41,47 +41,52 @@ app.use((req, res, next) => {
 const db = require('./database/db');
 
 async function startServer() {
-    try {
-        // Initialize database before starting server
-        await db.initDatabase();
-        console.log('✅ Database initialized');
+  try {
+    // Initialize database before starting server
+    await db.initDatabase();
 
-        // Import routes after database is ready
-        const authRoutes = require('./routes/auth');
-        const employeesRoutes = require('./routes/employees');
-        const shiftsRoutes = require('./routes/shifts');
-        const tasksRoutes = require('./routes/tasks');
+    // Ensure tables exist (Migration/Setup)
+    const { setupDatabase } = require('./database/setup');
+    await setupDatabase();
 
-        // ============================================
-        // API Routes
-        // ============================================
+    console.log('✅ Database initialized and tables verified');
 
-        // Health check
-        app.get('/api/health', (req, res) => {
-            res.json({
-                status: 'ok',
-                message: '7-Eleven Shift Manager API is running',
-                version: '1.0.0',
-                timestamp: new Date().toISOString()
-            });
-        });
+    // Import routes after database is ready
+    const authRoutes = require('./routes/auth');
+    const employeesRoutes = require('./routes/employees');
+    const shiftsRoutes = require('./routes/shifts');
+    const tasksRoutes = require('./routes/tasks');
 
-        // Debug & Static Files Check
-        const frontendPath = path.join(__dirname, '../frontend');
-        console.log('📂 Serving frontend from:', frontendPath);
+    // ============================================
+    // API Routes
+    // ============================================
 
-        const indexHtmlPath = path.join(frontendPath, 'index.html');
-        console.log('📄 Looking for index.html at:', indexHtmlPath);
+    // Health check
+    app.get('/api/health', (req, res) => {
+      res.json({
+        status: 'ok',
+        message: '7-Eleven Shift Manager API is running',
+        version: '1.0.0',
+        timestamp: new Date().toISOString()
+      });
+    });
 
-        // Explicit Root Route (In-Memory HTML Fallback)
-        app.get('/', (req, res) => {
-            // Check if file exists first
-            if (require('fs').existsSync(indexHtmlPath)) {
-                res.sendFile(indexHtmlPath);
-            } else {
-                console.error('❌ index.html not found on disk, serving backup HTML');
-                // Backup HTML if file not found (Emergency Mode)
-                res.send(`
+    // Debug & Static Files Check
+    const frontendPath = path.join(__dirname, '../frontend');
+    console.log('📂 Serving frontend from:', frontendPath);
+
+    const indexHtmlPath = path.join(frontendPath, 'index.html');
+    console.log('📄 Looking for index.html at:', indexHtmlPath);
+
+    // Explicit Root Route (In-Memory HTML Fallback)
+    app.get('/', (req, res) => {
+      // Check if file exists first
+      if (require('fs').existsSync(indexHtmlPath)) {
+        res.sendFile(indexHtmlPath);
+      } else {
+        console.error('❌ index.html not found on disk, serving backup HTML');
+        // Backup HTML if file not found (Emergency Mode)
+        res.send(`
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -132,61 +137,76 @@ async function startServer() {
 </body>
 </html>
                 `);
-            }
-        });
+      }
+    });
 
-        // Auth routes
-        app.use('/api/auth', authRoutes);
+    // Auth routes
+    app.use('/api/auth', authRoutes);
 
-        // Employee routes
-        app.use('/api/employees', employeesRoutes);
+    // Employee routes
+    app.use('/api/employees', employeesRoutes);
 
-        // Shift routes
-        app.use('/api/shifts', shiftsRoutes);
+    // Shift routes
+    app.use('/api/shifts', shiftsRoutes);
 
-        // Task routes
-        app.use('/api/tasks', tasksRoutes);
+    // Task routes
+    app.use('/api/tasks', tasksRoutes);
 
-        // ============================================
-        // Error Handling
-        // ============================================
+    // ============================================
+    // Error Handling
+    // ============================================
 
-        // 404 handler
-        app.use((req, res, next) => {
-            if (req.path.startsWith('/api')) {
-                res.status(404).json({ error: 'API endpoint not found' });
-            } else {
-                // For non-API routes, serve the frontend
-                res.sendFile(path.join(__dirname, '../frontend/index.html'));
-            }
-        });
+    // 404 handler
+    app.use((req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        res.status(404).json({ error: 'API endpoint not found' });
+      } else {
+        // For non-API routes, serve the frontend if exists
+        const indexPath = path.join(__dirname, '../frontend/index.html');
+        if (require('fs').existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).send('404 Not Found (Frontend build missing)');
+        }
+      }
+    });
 
-        // Global error handler
-        app.use((err, req, res, next) => {
-            console.error('Error:', err.message);
-            res.status(err.status || 500).json({
-                error: err.message || 'Internal server error'
-            });
-        });
+    // Global error handler
+    app.use((err, req, res, next) => {
+      console.error('Error:', err.message);
+      res.status(err.status || 500).json({
+        error: err.message || 'Internal server error'
+      });
+    });
 
-        // ============================================
-        // Start Server
-        // ============================================
+    // ============================================
+    // Start Server
+    // ============================================
 
-        app.listen(PORT, () => {
-            console.log('='.repeat(50));
-            console.log('  7-Eleven Shift Manager Server');
-            console.log('='.repeat(50));
-            console.log(`  🚀 Server running on http://localhost:${PORT}`);
-            console.log(`  📁 Frontend: http://localhost:${PORT}/`);
-            console.log(`  🔌 API: http://localhost:${PORT}/api`);
-            console.log('='.repeat(50));
-        });
+    app.listen(PORT, () => {
+      console.log('='.repeat(50));
+      console.log('  7-Eleven Shift Manager Server');
+      console.log('='.repeat(50));
+      console.log(`  🚀 Server running on http://localhost:${PORT}`);
+      console.log(`  📁 Frontend: http://localhost:${PORT}/`);
+      console.log(`  🔌 API: http://localhost:${PORT}/api`);
+      console.log('='.repeat(50));
+    });
 
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
+  } catch (error) {
+    console.error('❌ Failed to start server:');
+    console.error('Error details:', error.message);
+    console.error('Stack trace:', error.stack);
+
+    // Check for common issues
+    if (error.message.includes('EADDRINUSE')) {
+      console.error('💡 Port 3000 is already in use. Please close other applications using this port.');
+    } else if (error.message.includes('database') || error.message.includes('SQL')) {
+      console.error('💡 Database connection issue. Please check your database configuration.');
     }
+
+    process.exit(1);
+  }
 }
 
 // Start the server

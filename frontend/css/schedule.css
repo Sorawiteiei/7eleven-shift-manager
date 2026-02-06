@@ -529,26 +529,82 @@ select:focus {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
+    .schedule-controls {
+        padding: 1rem;
+    }
+
     .controls-row {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.75rem;
     }
 
     .view-tabs {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .view-tab {
+        flex: 1;
         justify-content: center;
+        white-space: nowrap;
     }
 
     .date-nav {
-        justify-content: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .current-date-display {
+        font-size: 1rem;
+        min-width: unset;
+        flex: 1;
+    }
+
+    .schedule-view.week-view {
+        overflow-x: auto;
     }
 
     .week-header,
     .week-row {
-        grid-template-columns: 60px repeat(7, 1fr);
+        grid-template-columns: 60px repeat(7, 120px);
+        /* Make horizontal scrollable */
         font-size: 0.75rem;
     }
 
     .task-checkboxes {
         grid-template-columns: 1fr;
+    }
+
+    /* Optimize Day View for Mobile */
+    .shift-card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .shift-info h3 {
+        font-size: 1.1rem;
+    }
+
+    .shift-employee {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .shift-employee .avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .shift-employee-info {
+        width: 100%;
+    }
+
+    .shift-employee-actions {
+        width: 100%;
+        justify-content: flex-end;
+        border-top: 1px solid var(--gray-200);
+        padding-top: 0.5rem;
+        margin-top: 0.25rem;
     }
 }

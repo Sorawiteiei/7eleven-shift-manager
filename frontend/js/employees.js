@@ -259,18 +259,20 @@ async function saveEmployee(e) {
 
   // Validation for CREATE
   if (!isEdit && !pin) {
-    alert('กรุณากรอกรหัส PIN');
+    alert('กรุณากรอกรหัส PIN (สำหรับเข้าสู่ระบบ)');
     return;
   }
 
+  const startDateVal = document.getElementById('empStartDate').value;
+
   const data = {
-    employeeId: document.getElementById('empCode').value,
-    name: document.getElementById('empName').value,
-    phone: document.getElementById('empPhone').value,
+    employeeId: document.getElementById('empCode').value.trim(),
+    name: document.getElementById('empName').value.trim(),
+    phone: document.getElementById('empPhone').value.trim(),
     role: document.getElementById('empRole').value,
     employmentType: document.getElementById('empEmploymentType') ? document.getElementById('empEmploymentType').value : 'fulltime',
-    email: document.getElementById('empEmail').value,
-    startDate: document.getElementById('empStartDate').value,
+    email: document.getElementById('empEmail').value.trim(),
+    startDate: startDateVal || null, // Send null if empty
   };
 
   // Only send password if provided
@@ -297,11 +299,12 @@ async function saveEmployee(e) {
       closeEmployeeModal();
       loadEmployees();
     } else {
-      alert('เกิดข้อผิดพลาด: ' + result.error);
+      console.error('Save failed:', result);
+      alert('เกิดข้อผิดพลาด: ' + (result.error || result.message || 'ไม่ทราบสาเหตุ'));
     }
   } catch (error) {
     console.error('Save error:', error);
-    alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
   }
 }
 
