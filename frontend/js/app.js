@@ -1,57 +1,22 @@
 /**
  * 7-Eleven Shift Manager - Main Application
- * จัดการ dashboard และตารางงาน
+ * จัดการ dashboard และตารางงาน (Connected to API)
  */
 
 // ============================================
-// Demo Data (จะย้ายไป database ภายหลัง)
+// Constants & State
 // ============================================
 
-// พนักงานทั้งหมด
-const EMPLOYEES = [
-    { id: 1, name: 'ผู้จัดการร้าน', role: 'manager', avatar: 'M', phone: '081-234-5678' },
-    { id: 2, name: 'สมชาย ใจดี', role: 'employee', avatar: 'ส', phone: '082-345-6789' },
-    { id: 3, name: 'สมหญิง รักงาน', role: 'employee', avatar: 'ส', phone: '083-456-7890' },
-    { id: 4, name: 'วิชัย มั่นคง', role: 'employee', avatar: 'ว', phone: '084-567-8901' },
-    { id: 5, name: 'นิดา สุขใจ', role: 'employee', avatar: 'น', phone: '085-678-9012' },
-    { id: 6, name: 'ประสิทธิ์ เก่งงาน', role: 'employee', avatar: 'ป', phone: '086-789-0123' },
-];
-
-// ประเภทกะ
 const SHIFT_TYPES = {
     morning: { name: 'กะเช้า', time: '06:00 - 14:00', icon: 'sun', color: 'morning' },
     afternoon: { name: 'กะบ่าย', time: '14:00 - 22:00', icon: 'cloud-sun', color: 'afternoon' },
     night: { name: 'กะดึก', time: '22:00 - 06:00', icon: 'moon', color: 'night' }
 };
 
-// หน้าที่งาน (จะให้ user กำหนดเพิ่มเติมได้)
-const TASK_TYPES = [
-    { id: 1, name: 'เปิดร้าน', description: 'เตรียมร้านก่อนเปิดขาย', shift: 'morning' },
-    { id: 2, name: 'เช็คสต๊อก', description: 'ตรวจนับสินค้าในร้าน', shift: 'all' },
-    { id: 3, name: 'รับของ', description: 'รับสินค้าจาก DC', shift: 'morning' },
-    { id: 4, name: 'จัดเรียงสินค้า', description: 'จัดเรียงสินค้าบนชั้นวาง', shift: 'all' },
-    { id: 5, name: 'ทำความสะอาด', description: 'ทำความสะอาดพื้นที่ร้าน', shift: 'all' },
-    { id: 6, name: 'ปิดร้าน', description: 'ปิดร้านและสรุปยอด', shift: 'night' },
-    { id: 7, name: 'แคชเชียร์', description: 'รับชำระเงินที่เคาน์เตอร์', shift: 'all' },
-    { id: 8, name: 'ทำอาหาร', description: 'เตรียมอาหารสด เช่น ข้าวกล่อง', shift: 'all' },
-    { id: 9, name: 'ชงกาแฟ', description: 'บริการเครื่องดื่ม All Cafe', shift: 'all' },
-    { id: 10, name: 'เติมสินค้า', description: 'เติมสินค้าในตู้แช่และชั้นวาง', shift: 'all' },
-];
-
-// ตารางงานตัวอย่าง (วันนี้)
-const TODAY_SCHEDULE = {
-    morning: [
-        { employeeId: 2, tasks: [1, 3, 7] },
-        { employeeId: 3, tasks: [2, 4, 9] },
-    ],
-    afternoon: [
-        { employeeId: 4, tasks: [7, 8, 10] },
-        { employeeId: 5, tasks: [4, 5, 9] },
-    ],
-    night: [
-        { employeeId: 6, tasks: [7, 5, 6] },
-        { employeeId: 2, tasks: [10, 6] },
-    ]
+let dashboardData = {
+    employees: [],
+    todayShifts: { morning: [], afternoon: [], night: [] },
+    stats: { totalEmployees: 0, todayShiftsPoints: 0, weeklyShiftsPoints: 0, pendingTasks: 0 }
 };
 
 // ============================================
@@ -61,71 +26,103 @@ const TODAY_SCHEDULE = {
 /**
  * โหลดข้อมูล dashboard
  */
-function loadDashboard() {
-    loadStats();
-    loadTodaySchedule();
+async function loadDashboard() {
+    try {
+        await Promise.all([
+            fetchEmployees(),
+            fetchTodaySchedule(),
+            fetchStats()
+        ]);
+
+        renderDashboard();
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+async function fetchEmployees() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/employees`);
+        if (res.ok) dashboardData.employees = await res.json();
+    } catch (e) { console.error('Fetch employees failed', e); }
+}
+
+async function fetchTodaySchedule() {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const res = await fetch(`${API_BASE_URL}/shifts/date/${today}`);
+        if (res.ok) dashboardData.todayShifts = await res.json(); // { morning: [], afternoon: [], night: [] }
+    } catch (e) { console.error('Fetch shifts failed', e); }
+}
+
+async function fetchStats() {
+    // Placeholder for future stats API
+}
+
+/**
+ * Render Dashboard Elements
+ */
+function renderDashboard() {
+    loadStatsUI();
+    loadTodayScheduleUI();
     loadMyTasks();
 }
 
 /**
- * โหลดสถิติ
+ * แสดงสถิติบนหน้าจอ
  */
-function loadStats() {
+function loadStatsUI() {
     // Total employees
-    document.getElementById('totalEmployees').textContent = EMPLOYEES.length;
+    document.getElementById('totalEmployees').textContent = dashboardData.employees.length;
 
     // Today's shifts count
-    const todayShiftsCount =
-        TODAY_SCHEDULE.morning.length +
-        TODAY_SCHEDULE.afternoon.length +
-        TODAY_SCHEDULE.night.length;
-    document.getElementById('todayShifts').textContent = todayShiftsCount;
+    const todayCount =
+        (dashboardData.todayShifts.morning?.length || 0) +
+        (dashboardData.todayShifts.afternoon?.length || 0) +
+        (dashboardData.todayShifts.night?.length || 0);
+    document.getElementById('todayShifts').textContent = todayCount;
 
-    // Weekly shifts (mock data)
-    document.getElementById('weeklyShifts').textContent = todayShiftsCount * 7;
+    // Weekly shifts (placeholder)
+    document.getElementById('weeklyShifts').textContent = '-';
 
     // Pending tasks
-    document.getElementById('pendingTasks').textContent = 3;
+    document.getElementById('pendingTasks').textContent = '-';
 }
 
 /**
- * โหลดตารางงานวันนี้
+ * แสดงตารางงานวันนี้
  */
-function loadTodaySchedule() {
-    // Morning shift
+function loadTodayScheduleUI() {
+    // Morning
     const morningEl = document.getElementById('morningEmployees');
-    morningEl.innerHTML = renderShiftEmployees(TODAY_SCHEDULE.morning);
+    morningEl.innerHTML = renderShiftEmployees(dashboardData.todayShifts.morning);
 
-    // Afternoon shift
+    // Afternoon
     const afternoonEl = document.getElementById('afternoonEmployees');
-    afternoonEl.innerHTML = renderShiftEmployees(TODAY_SCHEDULE.afternoon);
+    afternoonEl.innerHTML = renderShiftEmployees(dashboardData.todayShifts.afternoon);
 
-    // Night shift
+    // Night
     const nightEl = document.getElementById('nightEmployees');
-    nightEl.innerHTML = renderShiftEmployees(TODAY_SCHEDULE.night);
+    nightEl.innerHTML = renderShiftEmployees(dashboardData.todayShifts.night);
 }
 
 /**
  * Render พนักงานในแต่ละกะ
  */
-function renderShiftEmployees(shiftData) {
-    if (!shiftData || shiftData.length === 0) {
+function renderShiftEmployees(shiftList) {
+    if (!shiftList || shiftList.length === 0) {
         return '<p class="text-center" style="color: #9CA3AF; padding: 1rem;">ไม่มีพนักงานในกะนี้</p>';
     }
 
-    return shiftData.map(item => {
-        const employee = EMPLOYEES.find(e => e.id === item.employeeId);
-        if (!employee) return '';
-
-        const taskNames = item.tasks.map(taskId => {
-            const task = TASK_TYPES.find(t => t.id === taskId);
-            return task ? task.name : '';
-        }).filter(Boolean).join(', ');
+    return shiftList.map(shift => {
+        // shift object from API
+        const tasks = shift.tasks ? shift.tasks.map(t => t.name).join(', ') : '';
+        const avatar = shift.employee_avatar || (shift.employee_name ? shift.employee_name.charAt(0) : '?');
 
         return `
-      <div class="employee-chip" title="งาน: ${taskNames}">
-        <div class="avatar">${employee.avatar}</div>
-        <span>${employee.name}</span>
+      <div class="employee-chip" title="งาน: ${tasks}">
+        <div class="avatar">${avatar}</div>
+        <span>${shift.employee_name}</span>
       </div>
     `;
     }).join('');
@@ -139,59 +136,61 @@ function loadMyTasks() {
     if (!user) return;
 
     const myTasksEl = document.getElementById('myTasks');
-    const myTasksSectionEl = document.getElementById('myTasksSection');
 
-    // หา schedule ของ user ปัจจุบัน
-    let mySchedule = [];
-
-    for (const [shiftType, shiftData] of Object.entries(TODAY_SCHEDULE)) {
-        const userShift = shiftData.find(s => {
-            const emp = EMPLOYEES.find(e => e.id === s.employeeId);
-            return emp && emp.name === user.name;
-        });
-
-        if (userShift) {
-            mySchedule.push({
-                shift: SHIFT_TYPES[shiftType],
-                tasks: userShift.tasks.map(taskId => TASK_TYPES.find(t => t.id === taskId)).filter(Boolean)
-            });
+    // Find my shifts in today's data (flatten structure)
+    let myShifts = [];
+    ['morning', 'afternoon', 'night'].forEach(type => {
+        const shifts = dashboardData.todayShifts[type] || [];
+        const found = shifts.find(s => s.user_id === user.id || s.employee_name === user.name);
+        if (found) {
+            found.shiftTypeRaw = type;
+            myShifts.push(found);
         }
-    }
+    });
 
-    if (mySchedule.length === 0) {
+    if (myShifts.length === 0) {
         myTasksEl.innerHTML = '<p class="text-center" style="color: #9CA3AF; padding: 2rem;">ไม่มีงานที่ได้รับมอบหมายในวันนี้</p>';
         return;
     }
 
     let html = '';
 
-    mySchedule.forEach(schedule => {
+    myShifts.forEach(shift => {
+        const shiftTypeInfo = SHIFT_TYPES[shift.shiftTypeRaw];
+
         html += `
       <div class="shift-tasks-section" style="margin-bottom: 1.5rem;">
-        <div class="shift-badge ${schedule.shift.color}" style="margin-bottom: 0.75rem; display: inline-block; padding: 0.5rem 1rem;">
-          <i class="fas fa-${schedule.shift.icon}"></i>
-          ${schedule.shift.name} (${schedule.shift.time})
+        <div class="shift-badge ${shiftTypeInfo.color}" style="margin-bottom: 0.75rem; display: inline-block; padding: 0.5rem 1rem;">
+          <i class="fas fa-${shiftTypeInfo.icon}"></i>
+          ${shiftTypeInfo.name} (${shiftTypeInfo.time})
         </div>
         <div class="task-list">
     `;
 
-        schedule.tasks.forEach((task, index) => {
-            html += `
-        <div class="task-item">
-          <div class="task-checkbox" onclick="toggleTask(this)" data-task-id="${task.id}">
-            <i class="fas fa-check" style="display: none;"></i>
-          </div>
-          <div class="task-info">
-            <h4>${task.name}</h4>
-            <p>${task.description}</p>
-          </div>
-          <div class="task-time">
-            <i class="fas fa-clock"></i>
-            งานที่ ${index + 1}
-          </div>
-        </div>
-      `;
-        });
+        if (shift.tasks && shift.tasks.length > 0) {
+            shift.tasks.forEach((task, index) => {
+                const isCompleted = task.is_completed === 1;
+                html += `
+            <div class="task-item">
+              <div class="task-checkbox ${isCompleted ? 'completed' : ''}" 
+                   onclick="toggleTask(this, ${shift.id}, ${task.id})" 
+                   data-completed="${isCompleted}">
+                <i class="fas fa-check" style="display: ${isCompleted ? 'block' : 'none'};"></i>
+              </div>
+              <div class="task-info">
+                <h4>${task.name}</h4>
+                <p>งานที่ได้รับมอบหมาย</p>
+              </div>
+              <div class="task-time">
+                <i class="fas fa-clock"></i>
+                #${index + 1}
+              </div>
+            </div>
+            `;
+            });
+        } else {
+            html += `<p style="color:#aaa; padding:10px;">ไม่มีรายการงานย่อย</p>`;
+        }
 
         html += '</div></div>';
     });
@@ -200,15 +199,36 @@ function loadMyTasks() {
 }
 
 /**
- * Toggle task completion
+ * Toggle task completion (API connected)
  */
-function toggleTask(element) {
+async function toggleTask(element, shiftId, taskId) {
+    const isCompleted = element.classList.contains('completed');
+    const newState = !isCompleted;
+
+    // Optimistic UI update
     element.classList.toggle('completed');
     const icon = element.querySelector('i');
-    if (element.classList.contains('completed')) {
-        icon.style.display = 'block';
-    } else {
-        icon.style.display = 'none';
+    icon.style.display = newState ? 'block' : 'none';
+
+    try {
+        // Call API
+        const res = await fetch(`${API_BASE_URL}/shifts/${shiftId}/tasks/${taskId}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ completed: newState })
+        });
+
+        if (!res.ok) {
+            // Revert if failed
+            element.classList.toggle('completed');
+            icon.style.display = isCompleted ? 'block' : 'none';
+            console.error('Failed to update task status');
+        }
+    } catch (e) {
+        console.error('Network error:', e);
+        // Revert
+        element.classList.toggle('completed');
+        icon.style.display = isCompleted ? 'block' : 'none';
     }
 }
 

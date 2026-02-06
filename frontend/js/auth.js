@@ -4,7 +4,10 @@
  */
 
 // API Base URL (จะเปลี่ยนเมื่อมี backend จริง)
-const API_BASE_URL = 'http://localhost:3000/api';
+// API Base URL (Relative path for flexibility)
+// Works for both Localhost and Production (Render)
+window.API_BASE_URL = '/api';
+const API_BASE_URL = window.API_BASE_URL;
 
 // Demo Users (จะย้ายไป database ภายหลัง)
 const DEMO_USERS = [
@@ -72,36 +75,43 @@ function isManager() {
 /**
  * Login function
  */
+/**
+ * Login function
+ */
 async function login(employeeId, password, rememberMe = false) {
-    // ในขั้นตอนนี้ใช้ demo users ก่อน
-    // เมื่อมี backend จะเปลี่ยนเป็น API call
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employeeId, password })
+        });
 
-    const user = DEMO_USERS.find(u =>
-        u.employeeId === employeeId && u.password === password
-    );
+        const data = await response.json();
 
-    if (user) {
-        // สร้าง user object (ไม่รวม password)
-        const userData = {
-            id: user.id,
-            employeeId: user.employeeId,
-            name: user.name,
-            role: user.role,
-            avatar: user.avatar,
-            loginTime: new Date().toISOString()
-        };
+        if (response.ok) {
+            const userData = {
+                ...data.user,
+                token: data.token,
+                loginTime: new Date().toISOString()
+            };
 
-        // เก็บ session
-        if (rememberMe) {
-            localStorage.setItem('currentUser', JSON.stringify(userData));
+            // Store session
+            if (rememberMe) {
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                localStorage.setItem('authToken', data.token);
+            } else {
+                sessionStorage.setItem('currentUser', JSON.stringify(userData));
+                sessionStorage.setItem('authToken', data.token);
+            }
+
+            return { success: true, user: userData };
         } else {
-            sessionStorage.setItem('currentUser', JSON.stringify(userData));
+            return { success: false, message: data.error || 'Login failed' };
         }
-
-        return { success: true, user: userData };
+    } catch (error) {
+        console.error('Login error:', error);
+        return { success: false, message: 'Cannot connect to server' };
     }
-
-    return { success: false, message: 'รหัสพนักงานหรือรหัสผ่านไม่ถูกต้อง' };
 }
 
 /**

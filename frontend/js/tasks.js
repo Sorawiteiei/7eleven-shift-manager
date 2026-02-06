@@ -1,13 +1,13 @@
 /**
  * 7-Eleven Shift Manager - Tasks Module
- * จัดการหน้าที่งาน
+ * จัดการหน้าที่งาน (Connected to API)
  */
 
 // ============================================
 // State Variables
 // ============================================
 
-let tasksList = [...TASK_TYPES]; // Copy of tasks for manipulation
+let tasksList = [];
 let selectedIcon = 'check';
 
 // ============================================
@@ -17,19 +17,37 @@ let selectedIcon = 'check';
 /**
  * โหลดข้อมูลหน้าที่งาน
  */
-function loadTasks() {
-    updateTaskStats();
-    renderTaskList();
+async function loadTasks() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/tasks`);
+        if (!response.ok) throw new Error('ไม่สามารถดึงข้อมูลหน้าที่งานได้');
+
+        const tasks = await response.json();
+        tasksList = tasks;
+
+        updateTaskStats();
+        renderTaskList();
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการโหลดหน้าที่งาน:', error);
+        // Show error state in list
+        document.getElementById('taskList').innerHTML = `
+            <div class="empty-state" style="padding: 3rem; text-align: center; color: var(--red-500);">
+                <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h4>เกิดข้อผิดพลาด</h4>
+                <p>ไม่สามารถโหลดข้อมูลได้ในขณะนี้</p>
+            </div>
+        `;
+    }
 }
 
 /**
  * อัพเดทสถิติหน้าที่งาน
  */
 function updateTaskStats() {
-    const morning = TASK_TYPES.filter(t => t.shift === 'morning').length;
-    const afternoon = TASK_TYPES.filter(t => t.shift === 'afternoon').length;
-    const night = TASK_TYPES.filter(t => t.shift === 'night').length;
-    const all = TASK_TYPES.filter(t => t.shift === 'all').length;
+    const morning = tasksList.filter(t => t.shift === 'morning').length;
+    const afternoon = tasksList.filter(t => t.shift === 'afternoon').length;
+    const night = tasksList.filter(t => t.shift === 'night').length;
+    const all = tasksList.filter(t => t.shift === 'all').length;
 
     document.getElementById('morningTaskCount').textContent = `${morning} งาน`;
     document.getElementById('afternoonTaskCount').textContent = `${afternoon} งาน`;
@@ -117,7 +135,7 @@ function renderTaskList(tasks = tasksList) {
 function searchTasks(query) {
     const shiftFilter = document.getElementById('shiftFilter').value;
 
-    let filtered = TASK_TYPES;
+    let filtered = tasksList;
 
     // Filter by search query
     if (query) {
@@ -133,7 +151,6 @@ function searchTasks(query) {
         filtered = filtered.filter(task => task.shift === shiftFilter);
     }
 
-    tasksList = filtered;
     renderTaskList(filtered);
 }
 
@@ -181,7 +198,7 @@ function closeTaskModal() {
  * แก้ไขหน้าที่งาน
  */
 function editTask(id) {
-    const task = TASK_TYPES.find(t => t.id === id);
+    const task = tasksList.find(t => t.id === id);
     if (!task) return;
 
     document.getElementById('taskModalTitle').innerHTML = '<i class="fas fa-edit"></i> แก้ไขหน้าที่งาน';
@@ -207,22 +224,34 @@ function editTask(id) {
 /**
  * ลบหน้าที่งาน
  */
-function deleteTask(id) {
-    const task = TASK_TYPES.find(t => t.id === id);
+async function deleteTask(id) {
+    const task = tasksList.find(t => t.id === id);
     if (!task) return;
 
     if (confirm(`ต้องการลบหน้าที่งาน "${task.name}" หรือไม่?`)) {
-        // In production, this would call API
-        console.log('Delete task:', id);
-        alert('ลบหน้าที่งานเรียบร้อย! (Demo Mode)');
-        loadTasks();
+        try {
+            const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('ลบหน้าที่งานเรียบร้อย');
+                loadTasks(); // Reload list
+            } else {
+                const data = await response.json();
+                alert(`เกิดข้อผิดพลาด: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Delete task error:', error);
+            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+        }
     }
 }
 
 /**
  * บันทึกหน้าที่งาน
  */
-function saveTask(e) {
+async function saveTask(e) {
     e.preventDefault();
 
     const id = document.getElementById('taskId').value;
@@ -233,12 +262,33 @@ function saveTask(e) {
         icon: selectedIcon
     };
 
-    console.log('Save task:', id ? 'Edit' : 'Add', data);
+    const url = id
+        ? `${API_BASE_URL}/tasks/${id}`
+        : `${API_BASE_URL}/tasks`;
 
-    // In production, this would call API
-    alert(`${id ? 'แก้ไข' : 'เพิ่ม'}หน้าที่งานเรียบร้อย! (Demo Mode)`);
-    closeTaskModal();
-    loadTasks();
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert(`${id ? 'แก้ไข' : 'เพิ่ม'}หน้าที่งานเรียบร้อย!`);
+            closeTaskModal();
+            loadTasks();
+        } else {
+            const resData = await response.json();
+            alert(`เกิดข้อผิดพลาด: ${resData.error}`);
+        }
+    } catch (error) {
+        console.error('Save task error:', error);
+        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+    }
 }
 
 /**

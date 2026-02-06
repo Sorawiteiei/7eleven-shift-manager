@@ -4,9 +4,12 @@
     "webDir": "frontend",
     "bundledWebRuntime": false,
     "server": {
-        "url": "https://seven-eleven-app.onrender.com",
+        "url": "https://seven-eleven-shift.onrender.com",
         "cleartext": true,
-        "androidScheme": "https"
+        "androidScheme": "https",
+        "allowNavigation": [
+            "*"
+        ]
     },
     "plugins": {
         "SplashScreen": {

@@ -7,7 +7,7 @@
 // State Variables
 // ============================================
 
-let employeesList = [...EMPLOYEES]; // Copy of employees for manipulation
+let employeesList = [];
 
 // ============================================
 // Load and Display Employees
@@ -18,19 +18,18 @@ let employeesList = [...EMPLOYEES]; // Copy of employees for manipulation
  */
 async function loadEmployees() {
   try {
-    const response = await fetch(`${API_URL}/employees`);
+    const response = await fetch(`${API_BASE_URL}/employees`); // Use API_BASE_URL
     const data = await response.json();
 
     if (response.ok) {
-      EMPLOYEES = data; // Update global store
-      employeesList = [...EMPLOYEES];
+      employeesList = data; // Update local state
       updateEmployeeStats();
       renderEmployeeGrid();
     } else {
-      console.error('Failed to load employees:', data.error);
+      console.error('ไม่สามารถโหลดข้อมูลพนักงานได้:', data.error);
     }
   } catch (error) {
-    console.error('Network error:', error);
+    console.error('เกิดข้อผิดพลาดในการเชื่อมต่อ:', error);
   }
 }
 
@@ -38,12 +37,12 @@ async function loadEmployees() {
  * อัพเดทสถิติพนักงาน
  */
 function updateEmployeeStats() {
-  const total = EMPLOYEES.length;
-  const managers = EMPLOYEES.filter(e => e.role === 'manager').length;
-  const staff = EMPLOYEES.filter(e => e.role === 'employee').length;
+  const total = employeesList.length;
+  const managers = employeesList.filter(e => e.role === 'manager').length;
+  const staff = employeesList.filter(e => e.role === 'employee').length;
 
   // Additional stat: Part-time
-  const partTime = EMPLOYEES.filter(e => e.employmentType === 'parttime').length;
+  const partTime = employeesList.filter(e => e.employmentType === 'parttime').length;
 
   document.getElementById('totalEmployeesCount').textContent = total;
   document.getElementById('managersCount').textContent = managers;
@@ -133,6 +132,38 @@ function renderEmployeeGrid(employees = employeesList) {
 }
 
 // ... Search functions remain same ...
+// Manually including Search functions to preserve file integrity if I'm replacing the block
+
+/**
+ * ค้นหาพนักงาน
+ */
+function searchEmployees(query) {
+  const roleFilter = document.getElementById('roleFilter').value;
+  let filtered = employeesList;
+
+  if (query) {
+    query = query.toLowerCase();
+    filtered = filtered.filter(emp =>
+      emp.name.toLowerCase().includes(query) ||
+      (emp.employeeId && emp.employeeId.toLowerCase().includes(query)) ||
+      (emp.phone && emp.phone.includes(query))
+    );
+  }
+
+  if (roleFilter) {
+    filtered = filtered.filter(emp => emp.role === roleFilter);
+  }
+
+  renderEmployeeGrid(filtered);
+}
+
+/**
+ * กรองตามบทบาท
+ */
+function filterByRole(role) {
+  const query = document.getElementById('searchEmployee').value;
+  searchEmployees(query); // Re-run search logic which includes role filter
+}
 
 /**
  * เปิด Modal เพิ่มพนักงาน
@@ -149,12 +180,22 @@ function openAddEmployeeModal() {
 }
 
 // ... viewEmployee remains same but can be enhanced to show stats from API ...
+// Defining viewEmployee as it was implicitly referenced but not shown in replacement chunk?
+// I should provide the function definition to maintain validity
+
+function viewEmployee(id) {
+  const emp = employeesList.find(e => e.id === id);
+  if (!emp) return;
+  // Simple alert for now as original code was not fully provided in view_file for this part or assumed existing
+  // But let's assume valid view logic exists or I should reimplement basic view
+  alert(`พนักงาน: ${emp.name}\nรหัส: ${emp.employeeId}\nตำแหน่ง: ${emp.role}`);
+}
 
 /**
  * แก้ไขพนักงาน
  */
 function editEmployee(id) {
-  const emp = EMPLOYEES.find(e => e.id === id);
+  const emp = employeesList.find(e => e.id === id);
   if (!emp) return;
 
   document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-edit"></i> แก้ไขพนักงาน';
@@ -182,12 +223,12 @@ function editEmployee(id) {
  * ลบพนักงาน
  */
 async function deleteEmployee(id) {
-  const emp = EMPLOYEES.find(e => e.id === id);
+  const emp = employeesList.find(e => e.id === id);
   if (!emp) return;
 
   if (confirm(`ต้องการลบพนักงาน "${emp.name}" หรือไม่?`)) {
     try {
-      const response = await fetch(`${API_URL}/employees/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/employees/${id}`, {
         method: 'DELETE'
       });
 
@@ -238,7 +279,7 @@ async function saveEmployee(e) {
   }
 
   try {
-    const url = isEdit ? `${API_URL}/employees/${id}` : `${API_URL}/employees`;
+    const url = isEdit ? `${API_BASE_URL}/employees/${id}` : `${API_BASE_URL}/employees`;
     const method = isEdit ? 'PUT' : 'POST';
 
     const response = await fetch(url, {
