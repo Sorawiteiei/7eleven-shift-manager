@@ -300,11 +300,11 @@ function renderShiftContent(container, shiftData, shiftType) {
         </div>
         ${isManager() ? `
           <div class="shift-employee-actions">
-            <!-- Pass ID instead of object -->
-            <button class="btn-edit" onclick="editShift(${employee.id}, '${shiftType}')" title="แก้ไข">
+            <!-- Pass shift ID for real operations -->
+            <button class="btn-edit" onclick="editShift(${item.id})" title="แก้ไข">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="btn-delete" onclick="deleteShift(${employee.id}, '${shiftType}')" title="ลบ">
+            <button class="btn-delete" onclick="deleteShift(${item.id})" title="ลบ">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -620,10 +620,13 @@ async function saveShift(e) {
             shiftDate: date,
             shiftType,
             tasks,
-            customName,
-            startTime,
-            endTime
+            notes: '', // Added notes field
+            customName: customName || null,
+            startTime: startTime || null,
+            endTime: endTime || null
         };
+
+        console.log('Sending payload:', payload);
 
         const response = await fetch(`${API_BASE_URL}/shifts`, {
             method: 'POST',
@@ -638,11 +641,12 @@ async function saveShift(e) {
             closeAddShiftModal();
             loadScheduleView();
         } else {
-            alert('เกิดข้อผิดพลาด: ' + (result.error || result.message));
+            console.error('Server error:', result);
+            alert('เกิดข้อผิดพลาด: ' + (result.error || result.message || 'Unknown error'));
         }
     } catch (error) {
         console.error('Save shift error:', error);
-        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+        alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
     }
 }
 
@@ -661,11 +665,27 @@ function editShift(employeeId, shiftType) {
 /**
  * ลบกะ
  */
-function deleteShift(employeeId, shiftType) {
+/**
+ * ลบกะ
+ */
+async function deleteShift(shiftId) {
     if (confirm('ต้องการลบกะนี้หรือไม่?')) {
-        console.log('Delete shift:', employeeId, shiftType);
-        alert('ลบกะงานเรียบร้อย! (Demo Mode)');
-        loadScheduleView();
+        try {
+            const response = await fetch(`${API_BASE_URL}/shifts/${shiftId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('ลบกะงานเรียบร้อย!');
+                loadScheduleView();
+            } else {
+                const result = await response.json();
+                alert('เกิดข้อผิดพลาด: ' + (result.error || 'ไม่สามารถลบได้'));
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+        }
     }
 }
 

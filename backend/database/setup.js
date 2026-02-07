@@ -125,6 +125,13 @@ async function setupDatabase() {
         ['admin', passwordHash, 'ผู้จัดการร้าน', 'manager', '081-234-5678', 'ผ'],
         ['emp001', passwordHash, 'สมชาย ใจดี', 'employee', '082-345-6789', 'ส'],
         ['emp002', passwordHash, 'สมหญิง รักงาน', 'employee', '083-456-7890', 'ส'],
+        ['emp003', passwordHash, 'วิชัย มั่นคง', 'employee', '084-567-8901', 'ว'],
+        ['emp004', passwordHash, 'สุดา งามตา', 'employee', '085-678-9012', 'ส'],
+        ['emp005', passwordHash, 'มานะ อดทน', 'employee', '086-789-0123', 'ม'],
+        ['emp006', passwordHash, 'ปิติ ยินดี', 'employee', '087-890-1234', 'ป'],
+        ['emp007', passwordHash, 'วีระ กล้าหาญ', 'employee', '088-901-2345', 'ว'],
+        ['emp008', passwordHash, 'ชูใจ ใฝ่ดี', 'employee', '089-012-3456', 'ช'],
+        ['emp009', passwordHash, 'กานดา น่ารัก', 'employee', '090-123-4567', 'ก'],
       ];
 
       for (const user of users) {

@@ -3,14 +3,6 @@
     "appName": "7-Eleven Shift Manager",
     "webDir": "frontend",
     "bundledWebRuntime": false,
-    "server": {
-        "url": "https://seven-eleven-shift.onrender.com",
-        "cleartext": true,
-        "androidScheme": "https",
-        "allowNavigation": [
-            "*"
-        ]
-    },
     "plugins": {
         "SplashScreen": {
             "launchShowDuration": 2000,

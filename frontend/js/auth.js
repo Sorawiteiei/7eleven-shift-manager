@@ -3,11 +3,30 @@
  * จัดการการเข้าสู่ระบบและ session
  */
 
-// API Base URL (จะเปลี่ยนเมื่อมี backend จริง)
-// API Base URL (Relative path for flexibility)
-// Works for both Localhost and Production (Render)
-window.API_BASE_URL = '/api';
+// API Base URL Configuration
+// ----------------------------------------
+// [สำคัญ] ถ้าใช้บนมือถือจริง (Real Device) ให้เปลี่ยน '10.0.2.2' เป็น IPv4 ของคอมฯ (เช่น '192.168.1.X')
+// [สำคัญ] ถ้าใช้บน Emulator ให้ใช้ '10.0.2.2' ได้เลย
+const LOCAL_SERVER_IP = '10.0.2.2';
+const PORT = 3000;
+
+let apiUrl = '/api'; // Default for Web Browser (Localhost/Production)
+
+// Check if running in Capacitor/Cordova/Electron (Not standard web)
+if (window.location.protocol === 'file:' || window.location.hostname === 'localhost') {
+    // If on Android Emulator or Device accessing via file protocol
+    apiUrl = `http://${LOCAL_SERVER_IP}:${PORT}/api`;
+}
+
+// Override if strictly on web browser locally
+if (window.location.hostname === 'localhost' && window.location.port === '3000') {
+    apiUrl = '/api';
+}
+
+window.API_BASE_URL = apiUrl;
 const API_BASE_URL = window.API_BASE_URL;
+
+console.log('🔗 Connecting to API at:', API_BASE_URL);
 
 // Demo Users (จะย้ายไป database ภายหลัง)
 const DEMO_USERS = [
